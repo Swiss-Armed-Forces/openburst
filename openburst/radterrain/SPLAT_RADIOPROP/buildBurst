@@ -1,0 +1,60 @@
+#!/bin/bash
+# Simple shell script for building OPENBURST with SPLAT!, boost and mpi 
+# Written by Zenon Mathews, Last update: March 2024
+#
+# adapted from: 
+# https://medium.com/@keithwhitley/using-c-with-python-3-in-2018-480f3e46c8c
+#
+# and from: 
+# Simple shell script for building SPLAT! and associated utilities.
+# Written by John A. Magliacane, KD2BD May 2002 -- Last update: February 2014
+#
+
+
+cpu=`uname -m`
+model=""
+
+PYTHON_VERSION="3.10" 
+PYTHON_INC="/usr/include/python3.10" 
+BOOST_INC="/usr/include/boost" 
+BOOST_LIB_LOCATION="/usr/local/lib" 
+BOOST_LIB_FILE="boost_python310" # this means libboost_python312.so should be in the BOOST_LIB_LOCATION #"boost_python3.12" 
+
+
+if [ "$cpu" = "x86_64" ]; then
+    cpu="x86-64"
+    model="-mcmodel=medium"
+    
+    if [[ `uname -a` =~ Darwin ]]; then
+	model="";   ## for Mac OSX  ## J.V.
+    fi
+    
+elif [ "$cpu" = "sun4u" ]; then
+    cpu=""
+    model=""
+fi
+
+build_splat_shared_lib()
+{
+    echo -n "Compiling SPLAT! HD as a shared library for usage with boost... "
+    mpiCC -O2 -s -fomit-frame-pointer -ffast-math -pipe -fPIC -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC itwom3.0.cpp splatBurst.cpp -lrt -lboost_system -lpython3.10 -lm -lbz2 -shared -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o libsplathd.so
+    
+    if [ -x splat-hd ]; then
+	echo "Done!"
+    else
+	echo "Compilation failed!"
+    fi
+    
+}
+
+if [ "$#" = "0" ]; then
+	echo "Usage: buildBurst splat_shared_lib"
+else
+
+	if [ "$1" = "splat_shared_lib" ]; then
+		build_splat_shared_lib
+	fi
+
+	
+fi
+

@@ -1,0 +1,63 @@
+
+		--==[ SPLAT! HD v1.4.2 Path Analysis ]==--
+
+---------------------------------------------------------------------------
+
+Transmitter site: TX
+Site location: 47.1000 North / 352.3000 West (47° 6' 0" N / 352° 18' 0" W)
+Ground elevation: 627.00 meters AMSL
+Antenna height: 91.44 meters AGL / 718.44 meters AMSL
+Distance to RX: 7.57 kilometers
+Azimuth to RX: 270.04 degrees
+Depression angle to RX: -0.7940 degrees
+
+---------------------------------------------------------------------------
+
+Receiver site: RX
+Site location: 47.1000 North / 352.4000 West (47° 6' 0" N / 352° 23' 59" W)
+Ground elevation: 495.00 meters AMSL
+Antenna height: 121.92 meters AGL / 616.92 meters AMSL
+Distance to TX: 7.57 kilometers
+Azimuth to TX: 89.96 degrees
+Elevation angle to TX: +0.7429 degrees
+
+---------------------------------------------------------------------------
+
+Longley-Rice Parameters Used In This Analysis:
+
+Earth's Dielectric Constant: 13.000
+Earth's Conductivity: 0.002 Siemens/meter
+Atmospheric Bending Constant (N-units): 301.000 ppm
+Frequency: 88.100 MHz
+Radio Climate: 5 (Continental Temperate)
+Polarization: 0 (Horizontal)
+Fraction of Situations: 50.0%
+Fraction of Time: 90.0%
+Transmitter ERP: 46.000 kilowatts (+76.63 dBm)
+Transmitter EIRP: 75.294 kilowatts (+78.77 dBm)
+
+---------------------------------------------------------------------------
+
+Summary For The Link Between TX and RX:
+
+Free space path loss: 88.95 dB
+Longley-Rice path loss: 88.93 dB
+Attenuation due to terrain shielding: -0.01 dB
+Field strength at RX: 105.99 dBuV/meter
+Signal power level at RX: -10.17 dBm
+Signal power density at RX: -39.79 dBW per square meter
+Voltage across a 50 ohm dipole at RX: 88755.65 uV (98.96 dBuV)
+Voltage across a 75 ohm dipole at RX: 108703.02 uV (100.72 dBuV)
+Mode of propagation: Line-Of-Sight Mode
+Longley-Rice model error number: 0 (No error)
+
+---------------------------------------------------------------------------
+
+
+No obstructions to LOS path due to terrain were detected by SPLAT! HD
+
+Antenna at RX must be raised to at least 298.70 meters AGL
+to clear the first Fresnel zone.
+
+Antenna at RX must be raised to at least 188.37 meters AGL
+to clear 60% of the first Fresnel zone.

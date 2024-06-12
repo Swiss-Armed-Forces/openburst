@@ -1,0 +1,45 @@
+.container {
+    height: 100%;
+    text-align: center;
+    padding: 1em;
+    box-sizing: border-box;
+}
+img {
+    max-width: 100%;
+    max-height: 100%;
+    display: inline-block;
+}
+.iframe-wrapper {
+    position: relative;
+    height: 0;
+    padding-top: 25.25%;
+    overflow: hidden;
+}
+
+.iframe-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
+
+  #overlay {
+  position: absolute; 
+  top: 10px; 
+  right: 10px; 
+  color: #ff0000; 
+  text-align: center;
+  font-size: 20px;
+  background-color: rgba(221, 221, 221, 0.3);
+  width: 640px;
+  padding: 10px 0;
+  z-index: 2147483647;
+}
+
+#v {
+  z-index: 1;
+}
+

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	
+    <title>openburst BLUE AIRPIC</title>
+    
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/keen-dashboards-customized-ol-openburst.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.min.css">
+    
+  </head>
+  <body class="application">
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+	<div class="navbar-form">
+	  
+	  <a class="navbar-brand" > BLUE AIRPIC</a>
+	</div>
+	
+      </div>
+    </div>
+    
+    <div class="css3-tabstrip">
+      <ul>
+	<li>
+	  <input type="radio" name="css3-tabstrip-0" checked="checked" id="css3-tabstrip-0-0" /><label for="css3-tabstrip-0-0">Home</label>
+	  
+	  <div class="container-fluid">
+	    
+	    <div class="row">
+	      
+	      <div class="col-sm-8">
+		<div class="chart-wrapper">
+		  
+		  
+		  <div class="chart-stage" id="map-container">
+		    
+		    <div id="map" style="width:1800px; height:800px;"></div>
+		  </div>
+		  <div class="chart-wrapper">
+		    <div class="chart-stage">
+		      
+		      <table>
+			<tr>
+			  <td>
+			    <label>Lat: </label>
+			    <input class="textbox"type="text" id="lat2d"> 
+			    <label>Lon: </label>
+			    <input class="textbox"type="text" id="lon2d"> 
+			    <input id="goto" type="submit" value="Locate" /> 
+				<label>Target ID: </label> <input class="textbox_small"type="text" id="targetidinput"> 	
+			  </td>
+			</tr>	
+			
+			
+			
+			  
+</tr>
+
+
+
+</table>   
+
+
+
+</div>
+
+</div>
+
+</div>
+
+
+
+</div>
+
+
+
+<div class="col-sm-4">
+  <div class="css3-tabstrip" id="space-time-container">
+    <ul>
+      
+      <li>
+	<input type="radio" name="css3-tabstrip-1"  id="css3-tabstrip-1-2" /><label for="css3-tabstrip-1-2">Live</label>
+	<div class="container-fluid">
+	  <div class="chart-wrapper">
+	    <div class="chart-stage" >
+	      
+	      <div id="analysiscontainer3" style="width:100%; height:100%;"></div>
+	      <label>Track time: </label> <input id="track_time_input" value="" size= "70" disabled> 
+	      <div id="analysiscontainer4" style="width:100%; height:100%;"></div>
+	      <input id="reset_target_ticker" type="submit" value="Reset" /> 
+	      <div id="missile_target_altitude_container" style="width:100%; height:100%;"></div>
+	      <input id="reset_missile_ticker" type="submit" value="Reset" /> 
+	      
+	    </div>
+	  </div>
+	</div>
+      </li>
+      
+      <li>
+	<input type="radio" name="css3-tabstrip-1"  id="css3-tabstrip-1-4" /><label for="css3-tabstrip-1-4">KML</label>
+	<div class="container-fluid">
+	  <div class="chart-wrapper">
+	    <div class="chart-stage" >
+	      <table border="1" id="kml_table">
+		
+		<tbody><tr><td>---------------------------------------------------------------------------------</td><td><input type="checkbox" id="color_picker_checker"/></td><td><input type="color" value="#ff0000" id="color_picker1"/></td></tr></tbody>
+	      </table><br/><br/>
+	      <button id="download_kml_file_button">Download KML</button>
+	      <button id="clear_kml_table">Clear Table</button><br/><br/>
+	    </div>
+	  </div>
+      </li>
+    </ul>
+    </div>
+
+    
+
+</div>
+  
+  
+</div>
+
+
+
+</li>
+
+
+
+	<li>
+		<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-60" /><label for="css3-tabstrip-0-60">Team</label>
+		<div>
+		  <div>
+		    <h4>RADINT: </h4> <input id="insert_radint" type="submit" value="Insert" style="width:100px"/> <input id="fetch_radint" type="submit" value="Fetch" style="width:100px"/> <input id="clear_radint" type="submit" value="Clear DB" style="width:100px"/> <input id="start_radint_tracking" type="submit" value="Start Tracking" style="width:100px"/> <input id="stop_radint_tracking" type="submit" value="Stop Tracking" style="width:100px"/>  <input id="radint_team_info" value=" ", size= "40" disabled>
+		    
+		    <h4>AIR: </h4> <input id="insert_air" type="submit" value="Insert" style="width:100px"/> <input id="fetch_air" type="submit" value="Fetch" style="width:100px"/> <input id="clear_air" type="submit" value="Clear DB" style="width:100px"/><input id="start_air_sim" type="submit" value="Start Air" style="width:100px"/> <input id="stop_air_sim" type="submit" value="Stop Air" style="width:100px"/> <input id="air_team_info" value=" ", size= "40" disabled>
+		    
+
+		  </div>
+		</div>
+
+	</li>
+	<li>
+		<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-5" /><label for="css3-tabstrip-0-5">About</label>
+		<div>
+			<h3>openBURST</h3>
+			<p> Base Units Readiness Simulation Tool. Burst 1969masl is a mountain peak in the Emmentaler Alps of canton Berne, CHE. A Burst signal in communications engineering denotes a finite number of oscillations of a specific frequency. Bursting, or burst firing, is an extreme diverse and general phenomenon of activity patterns in biological neurons. </p>
+			<h3>Shortcuts</h3>
+			<p> F1: new Air target</p>
+			<p> F2: set target Waypoint</p>
+			<p> F3: end waypoints for current target</p>
+			<p> c: compute coverage for all "enabled" RAD/PET sensors</p>
+			<p> shift+left-mouse-click: place sensor</p>
+			<p> double-mouse-click on map: place POI</p>
+			<h3>References</h3>
+			<p>[1] Multi-static passive receiver location optimization in alpine terrain using a parallelized genetic algorithm, (Mathews, Quiriconi, Weber) IEEE Radar Conference 2015</p>
+			<p>[2] Passive Radar Coverage Optimization, (Mousel P.) ETH Zurich Master Thesis April 2017</p>
+			<p>[3] Learning Resource Allocation in Active-Passive Radar Sensor Networks, (Mathews, Quiriconi, Weber), Frontiers in Signal Processing 2022</p>
+
+
+		</div>
+
+	</li>
+
+</ul>
+
+<div id="sensor_antenna_diag_input">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-4">
+				<div id="horz_sensor_pattern_slider"></div>
+			</div>
+
+			<div class="col-sm-4">
+				<div id="vert_sensor_pattern_slider"></div>
+			</div>
+		</div>
+	</div>
+
+	<div id="sensor_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="sensor_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="sensor_download_selectbox"></select>
+			</div>
+		</div>
+	</div>    
+	<div id="effector_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="effector_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="effector_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="system_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="system_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="system_download_selectbox"></select>
+			</div>
+		</div>
+	</div>    
+	<div id="dispo_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="dispo_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="dispo_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+
+	<div id="waypoints_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="waypoints_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="waypoints_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="target_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="target_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="targets_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="poi_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="poi_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="pois_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="target_trigger_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="target_trigger_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="target_trigger_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="threat_scenario_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="threat_scenario_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="threat_scenario_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="replay_ref_file_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="replay_ref_file_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="replay_test_file_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="replay_test_file_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="kml_file_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="kml_file_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="popup" class="ol-popup">
+		<a href="#" id="popup-closer" class="ol-popup-closer"></a>
+		<div id="popup-content"></div>
+	</div>
+	<div id="infobox"></div>
+</div>
+
+
+<script type="text/javascript" src="/static/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap.min.js"></script> 
+<script type="text/javascript" src="/static/js/ol.js"></script>
+<script type="text/javascript" src="/static/js/simulation.js"></script>
+<script type="text/javascript" src="/static/js/passiveDefinitions.js"></script>
+<script type="text/javascript" src="/static/js/initVariables.js"></script>
+<script type="application/javascript">add_proxy_server("{{proxy_server}}");</script>
+<script type="application/javascript">init_team("{{team}}");init_node("{{node}}");</script>
+<script type="text/javascript" src="/static/js/app_airpic.js"></script>
+
+
+</body>
+</html>

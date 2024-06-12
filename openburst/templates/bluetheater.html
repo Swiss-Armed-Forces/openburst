@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>openburst BLUE THEATER</title>
+
+	<link rel="stylesheet" type="text/css" href="/static/css/keen-dashboards-customized-ol-openburst.css" />
+	<link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.min.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css" />
+
+
+	
+</head>
+<body class="application">
+	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+
+				<a class="navbar-brand" > BLUE THEATER</a>
+			</div>
+
+		</div>
+	</div>
+
+
+	<div class="css3-tabstrip">
+		<ul>
+			<li>
+				<input type="radio" name="css3-tabstrip-0" checked="checked" id="css3-tabstrip-0-0" /><label for="css3-tabstrip-0-0">Home</label>
+
+				<div class="container-fluid">
+
+					<div class="row">
+
+						<div class="col-sm-8">
+							<div class="chart-wrapper">
+
+
+								<div class="chart-stage" id="map-container">
+
+									<div id="map" style="width:1800px; height:800px;"></div>
+								</div>
+								<div class="chart-wrapper">
+									<div class="chart-stage">
+
+										<table>
+											<tr>
+												<td>
+													<input class="textbox"type="text" id="lat2d"> 
+												</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>
+													<input class="textbox"type="text" id="lon2d"> 
+												</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>
+													<input id="goto" type="submit" value="Locate" /> 
+												</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>
+													<input class="textbox"type="text" id="flightheight" value="1000">			    
+												</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>
+													<input id="setheight" type="submit" value="Target [default: masl]" />
+												</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td> mAGL </td> <td> <input type="checkbox" id="magl_enabled"/> </td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>
+													<input id="setTerrainCulisse" type="submit" value="TERR" />
+												</td>
+												
+
+
+
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+												<td>
+													<div class="" id="yellow-led" tooltip="Left click to select location, F2 to slect location as waypoint, F3 to finish target trajectory."></div>
+												</td>
+												<td>
+													<div class="" id="red-led" tooltip="Please press <Stop> to finish simulation"</div>
+												</td>
+												<td>
+													<div class="" id="green-led" tooltip="Data captured. Please press <Start> to start simulation"</div>
+												</td>
+												<td>
+													<div class="" id="blue-led" tooltip="Sensor coverage computation running..."</div>
+													</td>
+												</tr>
+
+												
+												<tr>
+													
+													<td>
+													 <select id="sensor-selector">
+													   <option value="PCL">PCL</option>
+													   <option value="RADINT">RADINT</option>
+													   <option value="PET">PET</option>
+													   <option value="TARGET">TARGET</option>
+													   
+													 </select> 
+												</td>											</tr>
+
+
+											</table>   
+
+
+
+										</div>
+
+									</div>
+
+								</div>
+
+
+
+							</div>
+
+
+							<div class="col-sm-4">
+								<div class="css3-tabstrip" id="space-time-container">
+									<ul>
+
+										<li>
+											<input type="radio" name="css3-tabstrip-1"  id="css3-tabstrip-1-3" /><label for="css3-tabstrip-1-3">Replay</label>
+											<div class="container-fluid">
+												<div class="chart-wrapper">
+													<div class="chart-stage" >
+														<input id="start_replay" type="submit" value="Start" /> 
+														<input id="stop_replay" type="submit" value="Stop" /> 
+														<input id="pause_replay" type="submit" value="Pause" /> 
+														<br></br>
+														<br>
+														<label>Reference file name: </label>
+														<input id="ref_file_field" value="" size= "70" disabled>
+														<input id="ref_file_button" type="submit" value=".." /> 
+														<br><label><input  id="ref_unicode_check" type="checkbox" />Ref. ID Unicode</label></br>
+													</br>
+													<br>
+													<label>Test file name: </label>
+													<input id="test_file_field" value="dumb_test.npy"  size= "70"disabled>
+													<input id="test_file_button" type="submit" value=".." /> 
+													<br><label><input  id="test_unicode_check" type="checkbox" />Test ID Unicode</label></br>
+												</br>
+												<br>
+												<label>Sampling time[s] [int]: </label>
+												<input id="sampling_time_field" value="12 ">
+											</br>
+											<br>
+											<label>Replay update rate[s]: </label>
+											<input id="update_rate_field" value="2">
+										</br>
+										<br>
+										<label>Ref track deletion time [s]: </label>
+										<input id="ref_track_deletion_time_field" value=" 30">
+									</br>
+									<br>
+									<label>Test track deletion time [s]: </label>
+									<input id="test_track_deletion_time_field" value="30">
+								</br>
+								<br>
+								<label>R. Track ID: </label>
+								<input id="ref_track_id_field" value=" ", size= "5">
+								<input id="ref_track_info_field" value=" ", size= "40" disabled>
+
+							</br>
+							<br>
+							<label>T. Track ID: </label>
+							<input id="test_track_id_field" value=" ", size= "5">
+							<input id="test_track_info_field" value=" ", size= "40" disabled>
+
+						</br>
+					</div>
+
+
+				</div>
+												<div id="replay_analysiscontainer" style="width:100%; height:100%;"></div>
+			</div>
+		</li>
+		<li>
+			<input type="radio" name="css3-tabstrip-1"  id="css3-tabstrip-1-4" /><label for="css3-tabstrip-1-4">KML</label>
+			<div class="container-fluid">
+				<div class="chart-wrapper">
+					<div class="chart-stage" >
+						<table border="1" id="kml_table">
+
+							<tbody><tr><td contenteditable='true'>---------------------------------------------------------------------------------</td><td><input type="checkbox" id="color_picker_checker"/></td><td><input type="color" value="#ff0000" id="color_picker1"/></td></tr></tbody>
+						</table><br/><br/>
+						<button id="download_kml_file_button">Download KML</button>
+						<button id="clear_kml_table">Clear Table</button><br/><br/>
+					</div>
+				</div>
+			</li>
+			<li>
+											<input type="radio" name="css3-tabstrip-1"  id="css3-tabstrip-1-5" /><label for="css3-tabstrip-1-5">TERR</label>
+											<div class="container-fluid">
+												<div class="chart-wrapper" id="terrDiv">
+													<div class="chart-stage" >
+
+													</div>
+												</div>
+											</div>
+										</li>
+		</u>l
+	</div>
+</div>
+
+
+</div>
+
+
+
+</li>
+
+
+<li>
+	<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-6"  /><label for="css3-tabstrip-0-6">RADINT</label>
+	<div>
+
+		<h3>Active Monostatic Sensors</h3>
+
+		<div id="active_sensor_table_div" class="table-editable">
+			<table id="active_sensor_table" class="table" >
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>status[0/1]</th>
+					<th>Lat</th>
+					<th>Lon</th>
+					<th>Pow[W]</th>
+					<th>antenna_diam[m]</th>
+					<th>Freq[GHz]</th>
+					<th>pulse_width[micro s]</th>
+					<th>cpi_pulses</th>
+					<th>bwdth[MHz]</th>
+					<th>PfA</th>
+					<th>rotation time[s]</th>
+					<th>Category[0=ground/1=airborne]</th>
+					<th>Min. Elevation [deg]</th>
+					<th>Max. Elevation [deg]</th>
+					<th>Orientation [deg]</th>
+					<th>Horiz. Aperture [deg]</th>
+					<th>Min. det. range [km]</th>
+					<th>Max. det. range [km]</th>
+					<th>Min. det. height [km]</th>
+					<th>Max. det. height [km]</th>
+					<th>Min. tgt V [m/s]</th>
+					<th>Max. tgt V [m/s]</th>
+
+					<th></th>
+					<th></th>
+				</tr>
+
+				<!-- This is our clonable table line -->
+				<!-- TO COPY FROM ABOVE -->
+				<tr id = "sensor_hide_row" class="hide">
+					<td contenteditable="false">-1</td>
+					<td contenteditable="true">?</td>
+					<td contenteditable="false">1</td>
+					<td contenteditable="false">-1</td>
+					<td contenteditable="false">-1</td>
+					<td contenteditable="true">2000</td>
+					<td contenteditable="true">1.0</td>
+					<td contenteditable="true">1.0</td>
+					<td contenteditable="true">1.0</td>
+					<td contenteditable="true">1</td>
+					<td contenteditable="true">1</td>
+					<td contenteditable="true">0.000001</td>
+					<td contenteditable="true">10</td>
+					<td contenteditable="true">0</td>
+					<td contenteditable="true">-20</td>
+					<td contenteditable="true">60</td>
+					<td contenteditable="true">0</td>
+					<td contenteditable="true">0</td>
+					<td contenteditable="true">0</td>
+					<td contenteditable="true">0</td>
+					<td contenteditable="true">0</td>
+					<td contenteditable="true">0</td>
+					<td contenteditable="true">0</td>
+					<td contenteditable="true">0</td>
+
+					<td>
+						<span class="sensor-table-remove"> Delete</span>
+					</td>
+					
+				</tr>
+			</table>
+
+
+			<td> target RCS[m2] for coverage and online detection: </td>
+			<td> <input class="textbox" type="text" id="coverage_rcs" value="1.0">  </td>
+
+		</div>
+
+
+
+
+
+
+	</li>
+
+
+	<li>
+		<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-9" /><label for="css3-tabstrip-0-9">PCL</label>
+		<div>
+			<h3>Passive Sensors</h3>
+
+			<div>
+				<ol>
+					<li>
+						<input id="find_tx_for_passive_rx" type="submit" value="Find 150 max pow Tx for Rx" />
+					</li>
+					<li>
+						<input type="checkbox" name="Rx_Tx_LOS_req" id="Rx_Tx_LOS_req_inp" >
+						require Tx to Rx LoS?
+					</li>
+
+				</ol>
+
+			</div>
+
+			<div>
+				<ol>
+					<li>
+						<table>
+							<tr>
+								<td> lat start </td>								
+								<td> <input class="textbox" type="text" id="lat_start_inp" value="47.1">  </td>
+								<td> lon start </td>								
+								<td> <input class="textbox" type="text" id="lon_start_inp" value="8.3">  </td>
+								<td> height start [masl] </td>								
+								<td> <input class="textbox" type="text" id="height_start_inp" value="3000">  </td>
+
+							</tr> 
+							<tr>
+								<td> lat stop </td>								
+								<td> <input class="textbox" type="text" id="lat_stop_inp" value="47.52">  </td>
+								<td> lon stop </td>								
+								<td> <input class="textbox" type="text" id="lon_stop_inp" value="9">  </td>			
+								<td> height stop [masl]</td>								
+								<td> <input class="textbox" type="text" id="height_stop_inp" value="3000">  </td>
+
+							</tr> 
+							<tr>
+								<td> nbr x pts </td>								
+								<td> <input class="textbox" type="text" id="nbr_x_pts_inp" value="10">  </td>
+								<td> nbr y pts </td>								
+								<td> <input class="textbox" type="text" id="nbr_y_pts_inp" value="10">  </td>
+								<td> height step [m]</td>								
+								<td> <input class="textbox" type="text" id="height_step_inp" value="3000">  </td>
+
+							</tr>
+							<tr>
+								<td> x-res. (northing) </td>								
+								<td id = "res_x_outp">  ?  </td>
+								<td> y-res. (easting) </td>								
+								<td id = "res_y_outp">  ?  </td>			
+								<td> nbr z pts </td>								
+								<td id = "amt_z_pts_outp">  ?  </td>		
+
+							</tr> 
+						</table>
+					</li>
+					
+					<li>
+						<table>
+							<tr>
+								<td> SNR threshold [dB]</td>								
+								<td> <input class="textbox" type="text" id="SNR_thresh_inp" value="15">  </td>							
+							</tr>
+							<tr>
+								<td> Delay threshold [us] </td>								
+								<td> <input class="textbox" type="text" id="delay_tresh_inp" value="1">  </td>							
+							</tr>
+							<tr>
+								<td> Integration Time [s]</td>								
+								<td> <input class="textbox" type="text" id="t_max_inp" value="0.1">  </td>							
+							</tr>
+						</table>
+					</li>
+
+					<li>
+						<input id="calcPassCoverage" type="submit" value="calc. grid coverage" />
+					</li>
+
+					
+
+				</ol>
+			</div>
+			
+
+			<div>
+				<ol>
+					<li> flight level to plot coverage in: </li>
+					<li> <input id="flight_level_slider_inp" type="range" min="0" max="0" onchange="change_flight_level_slider()"/>  </li>
+					<li id="flight_level_to_plot">
+
+					</li>
+
+					
+					<li>
+						<table id="table_for_choosing_Rx_Cov_to_plot">
+
+						</table>						
+
+					</li>
+					<li>
+						<input id="plotRCScontours" type="submit" value="plot RCS contour plot" />
+					</li>
+				</ol>	
+			</div>	
+
+			<div>
+				<ol>
+					
+					<li>
+						<label> PCL online detection static RCS: </label>
+						<td> <input class="textbox" type="text" id="pcl_detection_rcs" value="10.0">  </td>
+					</li>
+				</ol>	
+			</div>	
+
+			<div id="passive_sensor_table_div" class="table-editable">
+				<table id="passive_sensor_table" class="table" >	      
+					<tr>
+						<th>rx_id</th>
+						<th>name</th>
+						<th>status[0/1]</th>
+						<th>x</th>
+						<th>y</th>
+						<th>lat</th>
+						<th>lon</th>
+						<th>masl</th>
+						<th>ahmagl</th>			  
+						<th>signal_type</th>
+						<th>bandwidth [kHz]</th>
+						<th>horiz_diagr_att</th>
+						<th>vert_diagr_att</th>
+						<th>gain</th>
+						<th>losses</th>
+						<th>temp_sys</th>
+						<th>limit_distance</th>
+						<th>lostxids</th>
+						<th>txcallsigns</th>
+
+					</tr>
+
+
+					<!-- This is our clonable table line -->
+					<tr id = "pass_sensor_hide_row" class="hide">
+						<td contenteditable="false">-1</td>
+						<td contenteditable="true">?</td>
+						<td contenteditable="true">1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>			  
+						<td contenteditable="true">FM</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">-1</td>
+						<td contenteditable="true">150000</td>
+						<td contenteditable="true">?</td>
+						<td contenteditable="true">0</td>
+
+						<td>
+							<span class="passsensor-table-remove ">Delete</span>
+						</td>
+						
+					</tr>
+				</table>
+			</div>
+		</div>
+
+	</li>
+	<li>
+		<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-10" /><label for="css3-tabstrip-0-10">PET</label>
+
+
+		<div>
+		  <h3>PET Sensors</h3>
+
+		<div id="pet_sensor_table_div" class="table-editable">
+			<table id="pet_sensor_table" class="table" >
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Status</th>
+					<th>Lat</th>
+					<th>Lon</th>
+					<th>Threshold[dbM]</th>
+					<th>antenna diagramm[0/1]</th>
+					<th>main beam azimuth[0..359]</th>
+					<th>main beam elevation[0.359]</th>
+					<th></th>
+					<th></th>
+				</tr>
+
+				<!-- This is our clonable table line -->
+				<!-- TO COPY FROM ABOVE -->
+				<tr id = "pet_hide_row" class="hide">
+					<td contenteditable="false">-1</td>
+					<td contenteditable="true">?</td>
+					<td contenteditable="true">?</td>
+					<td contenteditable="false">1</td>
+					<td contenteditable="false">-1</td>
+					<td contenteditable="true">-75</td>
+					<td contenteditable="true">1</td>
+					<td contenteditable="true">0</td>
+					<td contenteditable="true">0</td>
+					<td>
+						<span class="pet-table-remove ">Delete</span>
+					</td>
+					
+				</tr>
+			</table>
+
+
+			<td> max ERP (main beam including antenna gain) for coverage [dBm]: </td>
+			<td> <input class="textbox" type="text" id="pet_coverage_erp" value="1.0">  </td>
+			<td> target freq for coverage [GHz]: </td>
+			<td> <input class="textbox" type="text" id="pet_coverage_freq" value="1.0">  </td>
+			<td> lat_min </td>								
+			<td> <input class="textbox" type="text" id="pet_lat_min" value="46.0">  </td>
+			<td> lat_max </td>								
+			<td> <input class="textbox" type="text" id="pet_lat_max" value="47.7">  </td>
+			<td> lon_min </td>								
+			<td> <input class="textbox" type="text" id="pet_lon_min" value="5.8">  </td>
+			<td> lon_max </td>								
+			<td> <input class="textbox" type="text" id="pet_lon_max" value="10.4">  </td>
+
+		</div>
+		</div>
+
+	</li>
+	
+
+	<li>
+		<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-3" /><label for="css3-tabstrip-0-3">Air</label>
+		<div>
+			<div>
+				<h3>Objects</h3>
+
+
+				<div id="target_table_div" class="table-editable">
+					<table id="target_table" class="table" >
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+							<th>RCS[m2]</th>
+							<th>Velocity[m/s] (only for active coverage)</th>
+							<th>Corridor breadth [km]</th>
+							<th>Nof Targets</th>
+							<th>Type</th>
+							<th>running[0/1]</th>
+							<th>3D Waypoints ID</th>
+							<th>Status</th>
+							<th>maneuvring[0/1]</th>
+							<th></th>
+							<th></th>
+						</tr>
+
+						<!-- This is our clonable table line -->
+						<tr id = "target_hide_row" class="hide">
+							<td contenteditable="false">-1</td>
+							<td contenteditable="true">airplane.mat</td>
+							<td contenteditable="true">10</td>
+							<td contenteditable="true">1200</td>
+							<td contenteditable="true">0</td>
+							<td contenteditable="true">1</td>
+							<td contenteditable="true">Fighter</td>
+							<td contenteditable="true">0</td>
+							<td contenteditable="true">?</td>
+							<td contenteditable="true">0</td>
+							<td contenteditable="true">0</td>
+							<td>
+
+								<span class="target-table-remove ">Delete</span>
+								
+							</td>
+						</tr>
+					</table>
+				</div>
+
+
+				<h3>3D Waypoints</h3>
+				<div id="3d_waypoints_table_div" class="table-editable">
+
+					<table id="3d_waypoints_table" class="table" >
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+							<th>AGL[0] / ASL[1]</th>
+							<th>POI ID</th>
+							<th></th>
+							<th></th>
+						</tr>
+
+						<!-- This is our clonable table line -->
+						<tr id = "3d_waypoints_table_hide_row" class="hide">
+							<td contenteditable="false">-1</td>
+							<td contenteditable="true">?</td>
+							<td contenteditable="true">?</td>
+							<td contenteditable="true">?</td>
+							<td>
+								<span class="3d-waypoints-table-remove ">Delete</span>
+								
+							</td>
+						</tr>
+					</table>
+				</div>
+
+				<h3>Point of Interest (POI)</h3>
+				<div id="poi_table_div" class="table-editable">
+					<table id="poi_table" class="table" >
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+							<th>Lat</th>		
+							<th>Lon</th>
+							<th></th>
+							<th></th>
+						</tr>
+
+						<!-- This is our clonable table line -->
+						<tr id = "poi_hide_row" class="hide">
+							<td contenteditable="false">-1</td>
+							<td contenteditable="true">BB</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td>
+								<span class="poi-table-remove ">Delete</span>
+								
+							</td>
+						</tr>
+					</table>
+				</div>
+
+				<h3>Object Triggers</h3>
+				<div id="target_triggers_table_div" class="table-editable">
+					<span class="target-triggers-table-add "></span>
+					<table id="target_triggers_table" class="table" >
+						<tr>
+							<th>ID</th>
+							<th>Name</th>
+							<th>Source Target ID</th>
+							<th>Dest. Target ID</th>		
+							<th>Trigger Distance to POI[km]</th>
+							<th>POI ID</th>
+							<th></th>
+							<th></th>
+						</tr>
+
+						<!-- This is our clonable table line -->
+						<tr id = "target_hide_row" class="hide">
+							<td contenteditable="false">-1</td>
+							<td contenteditable="true">?</td>
+							<td contenteditable="true">?</td>
+							<td contenteditable="true">?</td>
+							<td contenteditable="true">-1</td>
+							<td contenteditable="true">"?"</td>
+							<td>
+								<span class="target-triggers-table-remove ">Delete</span>
+								
+							</td>
+						</tr>
+					</table>
+				</div>
+
+
+				<h3>Scenario</h3>
+				<div id="threat_scenario_table_div" class="table-editable">
+					<table id="threat_scenario_table" class="table" >
+						<tr>
+							<th>Name</th>
+							<th></th>
+							<th></th>
+						</tr>
+
+						<!-- This is our clonable table line -->
+						<tr id = "target_hide_row" class="hide">
+							<td contenteditable="true">?</td>
+							<td>
+								
+							</td>
+						</tr>
+					</table>
+				</div>
+
+			</div>
+
+		</div>
+	</li>
+
+
+
+
+
+
+	<li>
+		<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-20"  onclick='system_tab_clicked(this);'/><label for="css3-tabstrip-0-20">Tx of Opport.</label>
+		<div>
+			<div>
+				<h3>Transmitters</h3>
+				<input id="show_rad_patterns" type="submit" value="Show Rad Patterns of chosen Tx's" />
+				<input id="show_LOS_Tx_Rx_lines" type="submit" value="Show which Tx has LOS with which Rx" />
+				<input id="deact_all_Tx" type="submit" value="Set Status of all Tx to 0" />
+
+				<div id="passive_Tx_table_div" class="table-editable">
+					<table id="passive_Tx_table" class="table" >
+						<tr>
+							<th>tx_id</th>
+							<th>callsign</th>
+							<th>sitename</th>
+							<th>status[0/1]</th>
+							<th>lat</th>
+							<th>lon</th>
+							<th>masl</th>
+							<th>ahmagl</th>
+							<th>signal_type</th>
+							<th>Freq[MHz]</th>
+							<th>BW[kHz]</th>
+							<th>polarization</th>
+							<th>Type (OMNI/directional)</th>
+							<th>erp_h[dBW]</th>
+							<th>erp_v[dBW]</th>
+							<th>horizontal atten</th>
+							<th>vertical atten</th>
+							<th>horizontal rad pattern</th>
+							<th>vertical rad pattern</th>
+							<th>losrxids</th>
+							<th>Category[0=ground/1=airborne]</th>
+
+						</tr>
+
+						<!-- This is our clonable table line -->
+						<tr id = "passive_Tx_hide_row" class="hide">
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">?</td>
+							<td contenteditable="false">?</td>
+							<td contenteditable="true"> 1 </td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">?</td>
+							<td contenteditable="false">?</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+							<td contenteditable="false">-1</td>
+
+
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+
+
+
+
+	</li>
+
+	<li>
+		<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-60" /><label for="css3-tabstrip-0-60">Team</label>
+		<div>
+		  <div>
+			<h4>DB Item</h4>
+			<td>
+				<select id="db-item-selector">
+					<option value="RADINT">RADINT</option>
+					<option value="PCL_RX">PCL_RX</option>
+					<option value="AIR">AIR</option>
+					</select>
+			</td>
+
+			<h4>Command: </h4>
+		    <input id="insert_db_item" type="submit" value="Insert" style="width:100px"/> <input id="fetch_db_item" type="submit" value="Fetch" style="width:100px"/> <input id="clear_db_item" type="submit" value="Clear DB" style="width:100px"/> <input id="start_db_item_sim" type="submit" value="Start Sim" style="width:100px"/> <input id="stop_db_item_sim" type="submit" value="Stop Sim" style="width:100px"/>  <input id="db_item_team_info" value=" ", size= "40" disabled>
+
+
+
+
+
+			  <h4>Sensor DB Listing (double-click to de/activate) </h4>
+			  <table id="db_table">
+				  <tr>
+					  <th>ID</th>
+					  <th>Type</th>
+					  <th>Name</th>
+					  <th>Lat</th>
+					  <th>Lon</th>
+					  <th>Freq[GHz]</th>
+					  <th>Status</th>
+				  </tr>
+
+
+			  </table>
+
+
+
+		  </div>
+		</div>
+
+	</li>
+
+	<li>
+		<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-5" /><label for="css3-tabstrip-0-5">Radio Propagation</label>
+		<div>
+
+
+
+
+			<h3>Propagation model </h3>
+			<table>
+				<tr><td> Enabled for coverage computations: </td> <td> <input type="checkbox" id="prop_enabled"/> </td></tr>
+				<tr> <td> Used model </td>
+					</td><select id="prop-model-select">
+    					<option value="itwom"> Irregular Terrain With Obstructions (ITWOM v3.0)</option>
+    					<option value="longley-rice">Longley-Rice Irregular Terrain </option>
+						</select>
+					</td>
+				</tr>
+				<tr> <td> Earth dielectric constant (relative permittivity):  </td>
+					<td> <input class="textbox" type="text" id="diel_const" value="13.0">  </td>
+				</tr>
+				<tr> <td> Earth Conductivity (Siemens per meter):  </td>
+					<td> <input class="textbox" type="text" id="earth_cond" value="0.002">  </td>
+				</tr>
+				<tr> <td> Atmospheric Bending Constant (N-units):  </td>
+					<td> <input class="textbox" type="text" id="at_bend" value="301.0">  </td>
+				</tr>
+				<tr> <td> Radio Climate (5 = Continental Temperate):  </td>
+					<td> <input class="textbox" type="text" id="radio_climate" value="5.0">  </td>
+				</tr>
+				<tr> <td> Ground clutter [ft]:  </td>
+					<td> <input class="textbox" type="text" id="ground_clutter" value="10.0">  </td>
+				</tr>
+				<tr> <td>  <a href="https://www.qsl.net/kd2bd/splat.html">(see SPLAT!)</a>   </td> </tr>
+
+			</table>
+			<h3>Point-to-Point analysis [POI = Tx, left-click=Rx]</h3>
+			<table>
+				<tr> <td> Tx Lat  </td>
+					<td> <input class="textbox" type="text" id="p2p_prop_tx_lat" value="47.0">  </td>
+				</tr>
+				<tr> <td> Tx Lon [-minus] </td>
+					<td> <input class="textbox" type="text" id="p2p_prop_tx_lon" value="9.0">  </td>
+				</tr>
+				<tr> <td> Tx antenna height [ftAGL]:  </td>
+					<td> <input class="textbox" type="text" id="p2p_prop_tx_ant_h" value="20.0">  </td>
+				</tr>
+				<tr> <td> Tx Polarization (0 = Horizontal, 1 = Vertical):  </td>
+					<td> <input class="textbox" type="text" id="p2p_prop_tx_pol" value="0.0">  </td>
+				</tr>
+				<tr> <td> Tx ERP [Watt]:  </td>
+					<td> <input class="textbox" type="text" id="p2p_prop_tx_erp" value="300.0">  </td>
+				</tr>
+				<tr> <td> Tx Freq [MHz]:  </td>
+					<td> <input class="textbox" type="text" id="p2p_prop_tx_freq" value="800.0">  </td>
+				</tr>
+				<tr> <td> Rx Lat  </td>
+					<td> <input class="textbox" type="text" id="p2p_prop_rx_lat" value="48.0">  </td>
+				</tr>
+				<tr> <td> Rx Lon [-minus] </td>
+					<td> <input class="textbox" type="text" id="p2p_prop_rx_lon" value="11.0">  </td>
+				</tr>
+				<tr> <td> Rx antenna height [ftAGL]:  </td>
+					<td> <input class="textbox" type="text" id="p2p_prop_rx_ant_h" value="20.0">  </td>
+				</tr>
+
+				<tr> <td> <button id="p2pPropDetailedButton">Detailed Analysis</button> </td> </tr>
+				</table>
+			<table>
+				<tr> <td>  <img id="ItemPreview" src="" /></td> </tr>
+				<tr> <td>  <textarea class="scrollabletextbox" id="prop_txt" >  </textarea> </td> </tr>
+			</table>
+
+		</div>
+
+	</li>
+
+	
+
+	<li>
+		<input type="radio" name="css3-tabstrip-0" id="css3-tabstrip-0-13" /><label for="css3-tabstrip-0-13">About</label>
+		<div>
+			<h3>openBURST</h3>
+			<p> Base Units Readiness Simulation Tool. Burst 1969masl is a mountain peak in the Emmentaler Alps of canton Berne, CHE. A Burst signal in communications engineering is a finite number of oscillations of a specific frequency. Bursting, or burst firing, is an extreme diverse and general phenomenon of activity pattern of biological neurons. </p>
+			<h3>Shortcuts</h3>
+			<p> F1: new Air target</p>
+			<p> F2: set target Waypoint</p>
+			<p> F3: end waypoints for current target</p>
+			<p> c: compute coverage for all "enabled" RAD/PET sensors</p>
+			<p> shift+left-mouse-click: place sensor</p>
+			<p> double-mouse-click on map: place POI</p>
+			<h3>References</h3>
+			<p>[1] Multi-static passive receiver location optimization in alpine terrain using a parallelized genetic algorithm, (Mathews, Quiriconi, Weber) IEEE Radar Conference 2015</p>
+			<p>[2] Passive Radar Coverage Optimization, (Mousel P.) ETH Zurich Master Thesis April 2017</p>
+			<p>[3] Learning Resource Allocation in Active-Passive Radar Sensor Networks, (Mathews, Quiriconi, Weber), Frontiers in Signal Processing 2022</p>
+
+
+		</div>
+
+	</li>
+
+</ul>
+
+<div id="sensor_antenna_diag_input">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-4">
+				<div id="horz_sensor_pattern_slider"></div>
+			</div>
+
+			<div class="col-sm-4">
+				<div id="vert_sensor_pattern_slider"></div>
+			</div>
+		</div>
+	</div>
+
+	<div id="sensor_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="sensor_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="sensor_download_selectbox"></select>
+			</div>
+		</div>
+	</div>    
+	<div id="effector_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="effector_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="effector_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="system_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="system_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="system_download_selectbox"></select>
+			</div>
+		</div>
+	</div>    
+	<div id="dispo_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="dispo_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="dispo_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+
+	<div id="waypoints_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="waypoints_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="waypoints_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="target_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="target_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="targets_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="poi_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="poi_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="pois_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="target_trigger_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="target_trigger_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="target_trigger_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="threat_scenario_upload_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+
+			</div>
+		</div>
+	</div>
+
+	<div id="threat_scenario_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="threat_scenario_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="replay_ref_file_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="replay_ref_file_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="replay_test_file_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="replay_test_file_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="kml_file_download_diag_input">
+		<div class="container-fluid">
+			<div class="row">
+				<select id="kml_file_download_selectbox"></select>
+			</div>
+		</div>
+	</div>
+	<div id="popup" class="ol-popup">
+		<a href="#" id="popup-closer" class="ol-popup-closer"></a>
+		<div id="popup-content"></div>
+	</div>
+	<div id="infobox"></div>
+</div>
+
+<script type="text/javascript" src="/static/js/plotly-latest.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap.min.js"></script> 
+<script type="text/javascript" src="/static/js/ol.js"></script>
+<script type="text/javascript" src="/static/js/simulation.js"></script>
+<script type="text/javascript" src="/static/js/target.js"></script>
+<script type="text/javascript" src="/static/js/waypoint.js"></script>
+<script type="text/javascript" src="/static/js/replay.js"></script>
+<script type="text/javascript" src="/static/js/replayWorker.js"></script>
+<script type="text/javascript" src="/static/js/passiveworker.js"></script>
+<script type="text/javascript" src="/static/js/passiveDefinitions.js"></script>
+<script type="text/javascript" src="/static/js/passiveSendRequests.js"></script>
+<script type="text/javascript" src="/static/js/initVariables.js"></script>
+<script type="text/javascript" src="/static/js/passive.js"></script>
+<script type="application/javascript">add_proxy_server("{{proxy_server}}");</script>
+<script type="application/javascript">init_team("{{team}}");init_node("{{node}}");</script>
+<script type="text/javascript" src="/static/js/app.js"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,3 @@
+CREATE SCHEMA blue_live;
+CREATE SCHEMA red_live;
+CREATE SCHEMA admin;

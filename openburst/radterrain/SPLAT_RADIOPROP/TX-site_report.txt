@@ -1,0 +1,11 @@
+
+	--==[ SPLAT! HD v1.4.2 Site Analysis Report For: TX ]==--
+
+---------------------------------------------------------------------------
+
+Site location: 47.1000 North / 352.3000 West (47° 6' 0" N / 352° 18' 0" W)
+Ground elevation: 627.00 meters AMSL
+Antenna height: 91.44 meters AGL / 718.44 meters AMSL
+
+---------------------------------------------------------------------------
+

@@ -1,0 +1,74 @@
+#!/bin/bash
+# Simple shell script for building openBURST with SPLAT!, boost and mpi 
+# Written by Zenon Mathews,  Last update: March 2024
+#
+# adapted from: 
+#
+# https://medium.com/@keithwhitley/using-c-with-python-3-in-2018-480f3e46c8c
+#
+# and from:
+# 
+# Simple shell script for building SPLAT! and associated utilities.
+# Written by John A. Magliacane, KD2BD May 2002 -- Last update: February 2014
+#
+
+
+cpu=`uname -m`
+model=""
+
+PYTHON_VERSION="3.10" 
+PYTHON_INC="/usr/include/python3.10" 
+BOOST_INC="/usr/include/boost" 
+ 
+BOOST_LIB_LOCATION="/usr/local/lib/" 
+BOOST_LIB_FILE="boost_python310" # this means libboost_python310.so should be in the BOOST_LIB_LOCATION #"boost_python3.10" 
+
+if [ "$cpu" = "x86_64" ]; then
+        cpu="x86-64"
+	model="-mcmodel=medium"
+
+	if [[ `uname -a` =~ Darwin ]]; then
+		model="";   ## for Mac OSX  ## J.V.
+	fi
+
+elif [ "$cpu" = "sun4u" ]; then
+	cpu=""
+	model=""
+fi
+
+build_los_and_loss()
+{
+    
+	if [ -r hd-parms.h ]; then
+	    echo -n "Compiling BOOST MPI LOS AND LOSS... "
+	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_los_and_loss
+	
+	fi
+}
+
+
+build_radial_los_and_loss()
+{
+    
+	if [ -r hd-parms.h ]; then
+	    echo -n "Compiling BOOST MPI RADIAL LOS AND LOSS... "
+	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_radial_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lrt -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_radial_los_and_loss
+
+	fi
+}
+
+
+if [ "$#" = "0" ]; then
+    echo "Usage: build_mpi [los_and_loss/radial_los_and_loss]"
+else
+    
+    if [ "$1" = "los_and_loss" ]; then
+	build_los_and_loss
+    fi
+    
+   
+    if [ "$1" = "radial_los_and_loss" ]; then
+	build_radial_los_and_loss
+    fi
+fi
+
