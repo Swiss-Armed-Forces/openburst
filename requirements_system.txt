@@ -1,5 +1,6 @@
 python3.10
 python3-gdal
+python3.10-venv
 libbz2-dev
 python3.10-tk
 postgresql 

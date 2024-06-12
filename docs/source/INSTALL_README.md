@@ -35,7 +35,7 @@ Openburst uses the Splat! library for EM wave propagation loss computations. Ope
 ### openburst Installation
 
 * we strongly suggest the usage of a python virtual environment (see https://docs.python.org/3/tutorial/venv.html)
-(first make sure that python3.10-venv is installed):
+e.g.:
 ```
 python3.10 -m venv openburst-venv
 source openburst-venv/bin/activate
