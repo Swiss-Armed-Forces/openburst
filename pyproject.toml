@@ -8,7 +8,7 @@ authors = [
     {name = "Zenon Mathews", email = "zenon.mathews@vtg.admin.ch", name = "Romain Chessex", email = "romain.chessex@vtg.admin.ch"}
 ]
 description = "A target and sensor simulator for air surveillance"
-version = "0.1"
+version = "1.0"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
