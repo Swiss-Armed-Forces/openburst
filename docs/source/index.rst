@@ -33,9 +33,7 @@ openBURST is under active development and welcomes feedback and contributions.
 
 .. toctree::
    :hidden: 
-   :contents:: :depth: 0
    
-
    INSTALL_BOOST.md
    SPLAT_BURST_BOOST_README.md
    POSTGRESQL_README.md
