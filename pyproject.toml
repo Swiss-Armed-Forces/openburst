@@ -10,7 +10,7 @@ authors = [
 description = "A target and sensor simulator for air surveillance"
 version = "1.0"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 dependencies = [
     'pyproj>=3.5.0',
     'psutil>=5.9.5',
