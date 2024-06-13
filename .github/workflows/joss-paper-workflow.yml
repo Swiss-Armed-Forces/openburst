@@ -1,5 +1,6 @@
 name: openBURST draft
 on: [push]
+
 jobs:
   pdf-generation:
     name: run-pdf
@@ -19,6 +20,6 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: joss_paper
-          path: ${{ steps.generate-files.outputs.pdf_path}}
+          path: ./docs/source/joss_paper.pdf
     
     
