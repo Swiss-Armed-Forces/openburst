@@ -19,4 +19,4 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: joss_paper
-          path: ./joss_paper.pdf
+          path: ./docs/source/joss_paper.pdf
