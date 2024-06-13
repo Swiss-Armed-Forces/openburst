@@ -29,7 +29,7 @@ openBURST is under active development and welcomes feedback and contributions.
    :titlesonly:
    :caption: Introduction:
 
-   README.md
+   ../../README.md
 
 .. toctree::
    :hidden: 
