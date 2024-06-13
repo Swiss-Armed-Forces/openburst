@@ -14,7 +14,7 @@ jobs:
         uses: openjournals/openjournals-draft-action@master
         with:
           journal: joss
-          path: ./docs/source/paper.md
+          paper-path: ./docs/source/paper.md
       - name: Upload PDF file 
         id: upload-pdf
         uses: actions/upload-artifact@v1
