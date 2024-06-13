@@ -39,7 +39,7 @@ extensions = [
 templates_path = ['_templates']
 exclude_patterns = []
 
-autodoc_mock_imports = ["libsplathd", 'octave', 'stonesoup'] # mock some imports 
+autodoc_mock_imports = ["libsplathd", 'octave', 'stonesoup', 'openburst'] # mock some imports 
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
