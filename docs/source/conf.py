@@ -6,6 +6,7 @@
 
 import os
 import sys
+sys.path.insert(0, os.path.abspath('../../openburst/'))
 sys.path.insert(0, os.path.abspath('../../openburst/types/'))
 sys.path.insert(0, os.path.abspath('../../openburst/functions/'))
 sys.path.insert(0, os.path.abspath('../../openburst/pcl/'))
