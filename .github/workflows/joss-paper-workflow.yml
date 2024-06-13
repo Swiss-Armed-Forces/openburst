@@ -1,27 +1,9 @@
 name: openBURST draft
-on:
-  workflow_dispatch:
-    inputs:
-      repository_url: 'https://github.com/Swiss-Armed-Forces/openburst'
-        description: 'URL of the repository containing the paper file'
-        required: true
-      branch: 'joss'
-        description: 'Git branch where the paper Markdown file is'
-        required: true
-      issue_id: 
-        description: 'The issue number of the submission'
-        required: false
-      issue_title:
-        description: 'The issue title associated with the JOSS review'
-        required: false
+on: [push]
 jobs:
   pdf-generation:
-    name: ${{ format('PDF draft for issue {0}', github.event.inputs.issue_id) }}
+    name: run-pdf
     runs-on: ubuntu-latest
-    env:
-      GH_ACCESS_TOKEN: ${{ secrets.BOT_TOKEN }}
-      GH_TOKEN: ${{ secrets.BOT_TOKEN }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - name: Checkout code
         id: checkout-code
@@ -30,12 +12,9 @@ jobs:
         id: generate-files
         uses: openjournals/openjournals-draft-action@master
         with:
-          repository_url: ${{ github.event.inputs.repository_url }}
-          branch: ${{ github.event.inputs.branch }}
-          issue_id: ${{ github.event.inputs.issue_id }}
           journal: joss
           paper-path: ./docs/source/paper.md
-      - name: Upload PDF file to papers repo
+      - name: Upload PDF file 
         id: upload-pdf
         uses: actions/upload-artifact@v1
         with:
