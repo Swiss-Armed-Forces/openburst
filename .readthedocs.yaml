@@ -32,5 +32,5 @@ python:
   - requirements: docs/requirements.txt
   #- method: pip # install openburst as in "pip install -e ." locally
   #  path: . # install openburst as in "pip install -e ." locally
-    extra_requirements:
-    - docs
+  #  extra_requirements:
+  #  - docs
