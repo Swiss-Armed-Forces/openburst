@@ -33,5 +33,5 @@ python:
   # (the below only for local sphinx build and not for readthe docs!)
   #- method: pip # install openburst as in "pip install -e ." 
   #  path: . # install openburst as in "pip install -e ." locally
-    extra_requirements:
-    - docs
+  #  extra_requirements:
+  #  - docs
