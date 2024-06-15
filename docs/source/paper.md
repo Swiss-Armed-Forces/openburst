@@ -38,16 +38,21 @@ bibliography: paper.bib
 
 `openBURT` is a software framework to design, deploy and test active/passive radar system networks for detecting simulated or recorded real world air traffic. `openBURST` consists of decoupled software modules that can be replaced, extended or deployed independently for air surveillance sensor coverage and real-time detection computations. `openBURST` uses real-time communication between the distributed modules of the simulation framework, allowing for concurrent updates of target movements and sensor detections. Currently, `openBURST` supports coverage computation and real-time simulation of active radar and passive radar sensor detections for FM transmitters. Extensions with digital transmitters for passive radar and passive emitter tracking sensors are currently planned. `openBURST` extends the RF signal propagation, loss and terrain analysis tool [Splat!](https://www.qsl.net/kd2bd/splat.html), for EM signal propagation computations with multi-core parallel processing and graphical user interfacing. `openBURST` uses [openstreetmap](https://openstreetmap.org) data with [openlayers](https://openlayers.org) for the interactive map. Terrain digital elevation data provided by [GMTED10](https://www.usgs.gov/coastal-changes-and-impacts/gmted2010) is used for Line-of-Sight and propagation loss computations. `openBURST`implements a client-server architecture, letting browser based clients remain data and implementation agnostic. 
 
-On contrary to a number of existing open source tools for detailed simulations of single sensors, `openBURST` provides a single extendable framework for diverse sensor and target simulations. Also, by parallelizing computationally intensive steps and by providing a user-firendly brower based interface, `openBURST` considerably simplifies sensor network and target simulations. In summary, `openBURST` facilitates new exciting scientific explorations of sensor network/fusion performance studies and sensor network performance benchmarking. During its development, `openBURST` has been used in a number of studies for passive radar location optimization and learning resource allocation in active/passive sensor networks [@Mathews:2022; @Mathews:2015; @Mousel:2017]. 
-
+On contrary to a number of existing open source tools for detailed simulations of single sensors, `openBURST` provides a single extendable framework for diverse sensor and target simulations. By parallelizing computationally intensive steps and by providing a user-friendly browser based interface, `openBURST` considerably simplifies sensor network and target simulations. For example, `openBURT` can be used to dynamically change scenarios, sensor/transmitter attributes and targets for predicting of passive/active radar performance and compare with real-world test measurements as needed by recent studies [@Mala:2022]. Furthermore, `openBURST` provides a modular and extendable active/passive sensor network simulation framework, that can be used as the sensor model in diverse studies, such as sensor fusion performance [@Fra:2022], sensor location optimization [@Yi:2017; @Mathews:2015], learning resource optimization [@Mathews:2022] or decision making [@Mathews:2008]. In summary, `openBURST` facilitates new exciting scientific explorations of sensor network/fusion performance studies and sensor network performance benchmarking.
 
 ![openBURST Framework with its component modules and real-time database](./openburst_architecture.png)
 
+# Results Examples
 
-![Passive radar coverage computation (left, with numbered receivers and transmitters of oppportunity) and the terrain backdrop (right)](./openburst_pcl.png)
+![Example of passive radar coverage computation (left: with numbered receivers and transmitters of opportunity, right: terrain backdrop of the sensor position)](./openburst_pcl.png)
 
 
-![Passive radar real-time range-doppler detections for a given target scenario.](./range_doppler_openburst_pcl.png)
+![Example of passive radar real-time range-doppler detections for a given target scenario of a closely flying formation of aerial vehicles.](./range_doppler_openburst_pcl.png)
+
+
+# Publications and Projects
+
+`openBURST` has been used in a number of studies for passive radar location optimization, sensor fusion and learning resource allocation in active/passive sensor networks [@Mathews:2022; @Mathews:2015; @Studer:2022; @Mousel:2017]. 
 
 
 # Acknowledgements
