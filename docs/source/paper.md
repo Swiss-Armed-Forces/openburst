@@ -1,5 +1,5 @@
 ---
-title: 'openBURST: active/passive sensor coverage and real-time target detection analysis framework for air surveillance'
+title: 'openBURST[^1]: Real-time air surveillance simulation and analysis for active and passive sensors'
 tags:
   - C++
   - Python
@@ -26,6 +26,7 @@ date: 13 June 2024
 bibliography: paper.bib
 
 ---
+[^1] `BURST` is an acronym for “Base Units Readiness Simulation Tool”. Burst 1969 mASL is a humble yet stunning mountain peak in the Emmentaler Alps of canton Berne, Switzerland. The opensourced version of the original `BURST` tool was named `openBURST`.
 
 # Summary
 
@@ -38,11 +39,15 @@ bibliography: paper.bib
 
 On contrary to a number of existing open source tools for detailed simulations of single sensors, `openBURST` provides a single extendable framework for diverse sensor and target simulations. Also, by parallelizing computationally intensive steps and by providing a user-firendly brower based interface, `openBURST` considerably simplifies sensor network and target simulations. In summary, `openBURST` facilitates new exciting scientific explorations of sensor network/fusion performance studies and sensor network performance benchmarking. During its development, `openBURST` has been used in a number of studies for passive radar location optimization and learning resource allocation in active/passive sensor networks [@Mathews:2022; @Mathews:2015; @Mousel:2017]. 
 
+
 ![openBURST Framework with its component modules and real-time database](./openburst_architecture.png)
+
 
 ![Passive radar coverage computation (left, with numbered receivers and transmitters of oppportunity) and the terrain backdrop (right)](./openburst_pcl.png)
 
+
 ![Passive radar real-time range-doppler detections for a given target scenario.](./range_doppler_openburst_pcl.png)
+
 
 # Acknowledgements
 
