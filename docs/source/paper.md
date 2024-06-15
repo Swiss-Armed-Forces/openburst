@@ -1,5 +1,5 @@
 ---
-title: 'openBURST[^1]: Real-time air surveillance simulation and analysis for active and passive sensors'
+title: 'openBURST: Real-time air surveillance simulation and analysis for active and passive sensors'
 tags:
   - C++
   - Python
@@ -26,12 +26,13 @@ date: 13 June 2024
 bibliography: paper.bib
 
 ---
-[^1] `BURST` is an acronym for “Base Units Readiness Simulation Tool”. Burst 1969 mASL is a humble yet stunning mountain peak in the Emmentaler Alps of canton Berne, Switzerland. The opensourced version of the original `BURST` tool was named `openBURST`.
+
 
 # Summary
 
-`openBURST` is intended to provide the air surveillance sensor community with a framework for the development and testing of sensor coverage and real-time target detection analysis. `openBURST` focuses on the overall performance assessment of a sensor network. Besides static coverage diagram computations, `openBURST` facilitates real-time computation of sensor detections for simulated targets. This allows the statistical performance analysis of air picture generation in a given scenario. By providing a flexible and extendable framework to model and simulate active, passive, monostatic and multistatic sensors, it intends to enables the implementation of optimization approaches in sensor portfolios for air surveillance.
+`openBURST`[^1] is intended to provide the air surveillance sensor community with a framework for the development and testing of sensor coverage and real-time target detection analysis. `openBURST` focuses on the overall performance assessment of a sensor network. Besides static coverage diagram computations, `openBURST` facilitates real-time computation of sensor detections for simulated targets. This allows the statistical performance analysis of air picture generation in a given scenario. By providing a flexible and extendable framework to model and simulate active, passive, monostatic and multistatic sensors, it intends to enables the implementation of optimization approaches in sensor portfolios for air surveillance.
 
+[^1]: `BURST` is an acronym for “Base Units Readiness Simulation Tool”. Burst 1969 mASL is a mountain peak in the Emmentaler Alps of canton Berne, Switzerland. The opensourced version of the original `BURST` tool was named `openBURST`.
 
 # Statement of need
 
