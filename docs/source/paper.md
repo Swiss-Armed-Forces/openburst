@@ -17,7 +17,7 @@ authors:
     affiliation: "1" 
   - name: Romain Chessex
     equal-contrib: false 
-    affiliation: 1
+    affiliation: "1"
 
 affiliations:
  - name: Data Science and Modelling, Swiss Armed Forces Staff, Swiss Army, Switzerland
@@ -39,8 +39,11 @@ bibliography: paper.bib
 On contrary to a number of existing open source tools for detailed simulations of single sensors, `openBURST` provides a single extendable framework for diverse sensor and target simulations. Also, by parallelizing computationally intensive steps and by providing a user-firendly brower based interface, `openBURST` considerably simplifies sensor network and target simulations. In summary, `openBURST` facilitates new exciting scientific explorations of sensor network/fusion performance studies and sensor network performance benchmarking. During its development, `openBURST` has been used in a number of studies for passive radar location optimization and learning resource allocation in active/passive sensor networks [@Mathews:2022; @Mathews:2015; @Mousel:2017]. 
 
 ![openBURST Framework with its component modules and real-time database](./openburst_architecture.png)
+
 ![Passive radar coverage computation (left, with numbered receivers and transmitters of oppportunity) and the terrain backdrop (right)](./openburst_pcl.png)
+
 ![Passive radar real-time range-doppler detections for a given target scenario.](./range_doppler_openburst_pcl.png)
+
 # Acknowledgements
 
 We thankfully acknowledge the support from the the Swiss Armed Forces Staff for opensourcing `openBURST`. We also thank our colleagues at the Swiss Department of Defense, especially from the Swiss Air Force and  armasuisse Science & Technology. We acknowledge the early work for passive radar coverage computation implemented by the master thesis [@Mousel:2017].
