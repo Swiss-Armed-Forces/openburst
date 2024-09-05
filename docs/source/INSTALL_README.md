@@ -71,8 +71,9 @@ pip uninstall openburst
 ```
 export OCTAVE_EXECUTABLE=/usr/bin/octave-cli
 ```
+### create and adapt openburst_config.py
 
-* in constants/openburst_config.py replace all required user input values. 
+* in constants/ folder copy openburst_config_local.py to a new file openburst_config.py and replace all required user input values. 
 
 
 ### postgreSQL Datenbank
