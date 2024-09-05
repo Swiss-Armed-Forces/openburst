@@ -23,7 +23,7 @@ def test_read_pcl_detections():
             rows = cur.fetchall()
             print("----------- RX_ID | TX_ID | TGT_ID | TIME[ms] | BISTATIC_RANGE [km] | BISTATIC_DOPPLER [Hz] --------")
             for i in range(len(rows)):
-                assert len(rows[i]) == 16 # a row should have 16 elements
+                assert len(rows[i]) == 18 # a row should have 18 elements
                 print(rows[i][0],"|",  rows[i][1],"| ", rows[i][2],"| ", rows[i][3],"| ",  rows[i][4], "| ", rows[i][5])
             time.sleep(1)
             j = j + 1
