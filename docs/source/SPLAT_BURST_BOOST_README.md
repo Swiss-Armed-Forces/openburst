@@ -7,7 +7,7 @@
 
 ### Convert SRTM files in batch to sdf files
 * as described in: [onetransistor.eu](https://www.onetransistor.eu/2016/07/splat-rf-compile-setup.html)
-* for converting the downladed hgt files to sdf files using the bash script as described in the link above, splat! installation is necessary (sudo apt install splat)
+* for converting the downloaded hgt files to sdf files using the bash script as described in the link above, splat! installation is necessary (sudo apt install splat)
 
 ### configure source/DEM/SPLAT_RADIOPROP/splatBurst.h:
  
