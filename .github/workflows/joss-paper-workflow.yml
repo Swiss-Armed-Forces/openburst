@@ -17,7 +17,7 @@ jobs:
           paper-path: ./docs/source/paper.md
       - name: Upload PDF file 
         id: upload-pdf
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: joss_paper
           path: ./docs/source/paper.pdf
