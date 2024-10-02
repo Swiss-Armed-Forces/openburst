@@ -41,7 +41,7 @@ build_los_and_loss()
     
 	if [ -r hd-parms.h ]; then
 	    echo -n "Compiling BOOST MPI LOS AND LOSS... "
-	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_los_and_loss
+	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -fPIC -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_los_and_loss -shared
 	
 	fi
 }
@@ -52,7 +52,7 @@ build_radial_los_and_loss()
     
 	if [ -r hd-parms.h ]; then
 	    echo -n "Compiling BOOST MPI RADIAL LOS AND LOSS... "
-	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_radial_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lrt -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_radial_los_and_loss
+	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -fPIC -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_radial_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lrt -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_radial_los_and_loss -shared
 
 	fi
 }
