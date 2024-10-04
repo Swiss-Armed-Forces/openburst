@@ -72,15 +72,23 @@ pip uninstall openburst
 export OCTAVE_EXECUTABLE=/usr/bin/octave-cli
 ```
 
-* in constants/openburst_config.py replace all required user input values. 
-
 
 ### postgreSQL Datenbank
 
 For setting up your postgresql DB for openburst see:
 [postgresql](POSTGRESQL_README.md)
 
-### Port accesses
+### Run configuration
+
+* copy the provided sample configuration file: 
+```
+constants/openburst_config_local.py 
+```
+to your local configuration file: 
+```
+constants/openburst_config.py 
+```
+and replace all required user input values in the new file. 
 
 * allow all LAN connected clients to access port 8888 over tcp (for http access of clients)
 
