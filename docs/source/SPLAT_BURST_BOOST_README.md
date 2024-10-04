@@ -45,6 +45,7 @@ DEM_FILES_PATH = "~/Downloads/SRTM3_Eurasia_Data/SDF_Files"
 ```
 PYTHON_VERSION="3.10" 
 PYTHON_INC="/usr/include/python3.10" 
+BOOST_LIB_LOCATION="/usr/lib"
 BOOST_LIB_FILE="boost_python310"
 ```
 and "-lpython3.10" in the following line:
@@ -52,6 +53,8 @@ and "-lpython3.10" in the following line:
 ```
 mpiCC -O2 -s -fomit-frame-pointer -ffast-math -pipe -fPIC -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC itwom3.0.cpp splatBurst.cpp -lrt -lboost_system -lpython3.10 -lm -lbz2 -shared -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o libsplathd.so
 ```   
+make sure before compilation that your boost_python libraries (e.g. 'libboost_python310.so') is in the folder BOOST_LIB_LOCATION ('/usr/lib/').
+
 * run radterrain/SPLAT_RADIOPROP/buildBurst to generate shared library "libsplathd.so":
 ```
 ./buildBurst splat_shared_lib
@@ -62,6 +65,7 @@ mpiCC -O2 -s -fomit-frame-pointer -ffast-math -pipe -fPIC -march=$cpu $model -I$
 ```
 PYTHON_VERSION="3.10" 
 PYTHON_INC="/usr/include/python3.10" 
+BOOST_LIB_LOCATION="/usr/lib/" 
 BOOST_LIB_FILE="boost_python310" # this means libboost_python310.so should be in the BOOST_LIB_LOCATION #"see build_mpi" 
 ```
 and,  "-lboost_python310" and "-lpython3.10" in lines:
@@ -70,6 +74,8 @@ mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -march=$cpu $model -I$PYTHO
 
 mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_radial_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lrt -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_radial_los_and_loss
 ```
+
+make sure before compilation that your boost_python libraries (e.g. 'libboost_python310.so') is in the folder BOOST_LIB_LOCATION ('/usr/lib/').
 
 * build twice by running source/DEM/SPLAT_RADIOPROP/build_mpi for parallel computing as grid and as polar: 
 ```

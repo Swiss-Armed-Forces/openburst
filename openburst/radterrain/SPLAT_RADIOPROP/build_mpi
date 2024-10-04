@@ -20,7 +20,7 @@ PYTHON_VERSION="3.10"
 PYTHON_INC="/usr/include/python3.10" 
 BOOST_INC="/usr/include/boost" 
  
-BOOST_LIB_LOCATION="/usr/local/lib/" 
+BOOST_LIB_LOCATION="/usr/lib/" 
 BOOST_LIB_FILE="boost_python310" # this means libboost_python310.so should be in the BOOST_LIB_LOCATION #"boost_python3.10" 
 
 if [ "$cpu" = "x86_64" ]; then
@@ -41,7 +41,7 @@ build_los_and_loss()
     
 	if [ -r hd-parms.h ]; then
 	    echo -n "Compiling BOOST MPI LOS AND LOSS... "
-	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -fPIC -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_los_and_loss -shared
+	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_los_and_loss 
 	
 	fi
 }
@@ -52,7 +52,7 @@ build_radial_los_and_loss()
     
 	if [ -r hd-parms.h ]; then
 	    echo -n "Compiling BOOST MPI RADIAL LOS AND LOSS... "
-	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -fPIC -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_radial_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lrt -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_radial_los_and_loss -shared
+	    mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -march=$cpu $model -I$PYTHON_INC -I$BOOST_INC mpi_radial_los_and_loss.cpp -L./ -lsplathd -lboost_python310 -lrt -lboost_system -lpython3.10  -lboost_mpi  -lrt -ldl  -lm -lbz2 -Wl,-soname,$@ -Wl,-rpath,$BOOST_LIB_LOCATION -L$BOOST_LIB_LOCATION -l$BOOST_LIB_FILE  -o mpi_radial_los_and_loss 
 
 	fi
 }
