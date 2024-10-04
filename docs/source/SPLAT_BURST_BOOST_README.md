@@ -15,6 +15,7 @@
 ```
 char burst_dem_path[] = "~/Downloads/SRTM3_Eurasia_Data/SDF_Files/";
 ```
+(make sure to have the forward slash "/" at the end of the pathname as above)
 
 * set std-params (a high number as e.g. below so that long distance propagation losses can be calculated):
  
@@ -31,6 +32,7 @@ char burst_dem_path[] = "~/Downloads/SRTM3_Eurasia_Data/SDF_Files/";
 ```
 DEM_FILES_PATH = "~/Downloads/SRTM3_Eurasia_Data/SDF_Files" 
 ```
+(make sure NOT to have the forward slash "/" at the end of the pathname as above)
 
 ### build splat-hd 
 * in directory radterrain/SPLAT_RADIOPROP (radterrain.py uses ./splat-hd to compute simple point-to-point LoS and propagation)
