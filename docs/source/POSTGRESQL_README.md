@@ -3,9 +3,6 @@
 
 ## PostgreSQL Setup
 
-### pgadmin
-* Install pgadmin4 (caution: it seemst that pgadmin4 does not work with python3.10, but with lower versions e.g. python3.8); see [pgadmin4 on Ubuntu](https://tecadmin.net/how-to-install-pgadmin4-on-ubuntu-20-04/)
-
 
 ### set up postgresql databank
 
@@ -19,9 +16,9 @@ sudo systemctl start postgresql.service
 
 * after this the command "psql -d red" should work.  
 
-* let the port be accessed for DB 
+* let the port be accessed for DB (replace 'XY' with your postgresql version, e.g. '12')
 ```
-cd /etc/postgresql/12/main/
+cd /etc/postgresql/XY/main/
 ```
 
 open file named postgresql.conf
@@ -87,4 +84,11 @@ psql red -f create_triggers.sql
 ```
 psql red -f write_table_entries.sql
 ```
-* open pgadmin4 and then add server above with the username and password; leave host field and password fields empty, but use the username as your linux user name
+
+
+### pgadmin to view the DB
+* Install pgadmin4 (if pgadmin4 does not work with python3.10 and your Linux distribution and version, try with a lower Python version e.g. python3.8); see e.g. [pgadmin4 on Ubuntu](https://tecadmin.net/how-to-install-pgadmin4-on-ubuntu-20-04/)
+
+* in order to view the DB open pgadmin4 and then add server above with the username and password; Hostname should be "localhost", port "5432" and maintenance database "postgres". 
+
+* then you click through the pgadmin GUI to connect to the DB created above and view or query the tables. 
