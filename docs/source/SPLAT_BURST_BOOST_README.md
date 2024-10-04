@@ -4,10 +4,31 @@
 ### Download SRTM files:
 * from: [viewfinderpanoramas.org](http://www.viewfinderpanoramas.org/Coverage%20map%20viewfinderpanoramas_org3.htm)
 * as described in: [onetransistor.eu](https://www.onetransistor.eu/2016/07/splat-rf-compile-setup.html)
+* make sure you download all the SRTM files (.hgt)
 
-### Convert SRTM files in batch to sdf files
-* as described in: [onetransistor.eu](https://www.onetransistor.eu/2016/07/splat-rf-compile-setup.html)
-* for converting the downloaded hgt files to sdf files using the bash script as described in the link above, splat! installation is necessary (sudo apt install splat)
+### Summary to convert SRTM files in batch to sdf files
+* (see full description in: [onetransistor.eu](https://www.onetransistor.eu/2016/07/splat-rf-compile-setup.html))
+
+* Splat! works with .sdf terrain files. For converting the downloaded hgt files to sdf files using the bash script as described in the link above, splat! installation is necessary:
+```
+sudo apt install splat
+```
+* Change to the folder where the .hgt files are downloaded. Make a script called 'script.sh' with the following content:
+```
+#!/bin/bash  
+shopt -s nullglob  
+for f in /<path_to_srtm_folder>/*.hgt; do  
+    echo "Converting $f"  
+    srtm2sdf-hd $f 
+done  
+```
+* adjust the absolute path to SRTM files. 
+* Open a terminal in the same directory and run 
+```
+chmod +x ./script.sh && ./script.sh
+```
+* move all the .sdf files to a separate folder. This is the folder containing the Digital Elevation Model (DEM) files you will need in the next two steps.  
+
 
 ### configure source/DEM/SPLAT_RADIOPROP/splatBurst.h:
  
