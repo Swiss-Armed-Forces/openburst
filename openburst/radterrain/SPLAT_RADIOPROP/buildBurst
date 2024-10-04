@@ -17,7 +17,7 @@ model=""
 PYTHON_VERSION="3.10" 
 PYTHON_INC="/usr/include/python3.10" 
 BOOST_INC="/usr/include/boost" 
-BOOST_LIB_LOCATION="/usr/local/lib" 
+BOOST_LIB_LOCATION="/usr/lib" 
 BOOST_LIB_FILE="boost_python310" # this means libboost_python310.so should be in the BOOST_LIB_LOCATION 
 
 
