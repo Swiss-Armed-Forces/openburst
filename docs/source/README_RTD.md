@@ -27,8 +27,8 @@ openBURST provides a framework consisting of decoupled software modules that can
 
 ## Executing program
 
-* after installation, run modules_manager.py from folder openburst/ and start the necessary modules
-* then open a browser and type in the url: http://localhost:8888
+* after installation, please follow [running openBurst](./RUNNING_OPENBURST.md) to check the core functionalities of openBURST.
+
 
 
 ## Help
