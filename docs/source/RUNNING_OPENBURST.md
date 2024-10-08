@@ -1,6 +1,6 @@
  
 
-## Running openBURST
+## Testing openBURST core functionalities
 
 This assumes that openBURST was installed correctly as documented. 
 
