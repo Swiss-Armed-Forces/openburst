@@ -65,12 +65,6 @@ os.path.dirname(openburst.__file__)
 ```
 * if you get errors, exit the current Python virtual-env, create a new virtual-env, enter it, reinstall openburst and try the the above again. 
 
-* to uninstall openburst run:
-
-```
-pip uninstall openburst
-```
-
 
 ## Setup 
 
