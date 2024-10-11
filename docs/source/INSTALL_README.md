@@ -56,6 +56,15 @@ pip install -e .
 pip show openburst
 ```
 
+* also, to check if the package openburst can be found, start python in a terminal and make sure there are no errors while executing the following and the path to the openburst package is correctly shown:
+
+```
+import os
+import openburst
+os.path.dirname(openburst.__file__)
+```
+* if you get errors, exit the current Python virtual-env, create a new virtual-env, enter it, reinstall openburst and try the the above again. 
+
 * to uninstall openburst run:
 
 ```
@@ -96,8 +105,12 @@ and replace all required user input values in the new file.
 
 ### Run Tests
 
+* edit the test file "tests/dem/test_get_terrain_height.py" and replace the current "lat" and "lon" values so that they correspond to a location for which you have downloaded the DEM files. 
+
 * run tests (add flag -s for showing print outputs of test):
 
 ```
 pytest --pyargs openburst
 ```
+
+

@@ -24,7 +24,8 @@ BURST_DB_SERVER_PASSWORD = "red"
 ########################################################################################
 
 # --- set root and server directories for openburst
-ROOT_DIR = os.path.dirname(os.path.abspath(inspect.getsourcefile(openburst)))
+#ROOT_DIR = os.path.dirname(os.path.abspath(inspect.getsourcefile(openburst)))
+ROOT_DIR = os.path.dirname(openburst.__file__)
 
 # servers will read the appropriate port numbers from here, before they start
 # servers will then write their ip and port into the burst postgres DB, so that clients of these servers can access them
