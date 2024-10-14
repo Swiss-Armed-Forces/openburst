@@ -30,7 +30,7 @@ chmod +x ./script.sh && ./script.sh
 * move all the .sdf files to a separate folder. This is the folder containing the Digital Elevation Model (DEM) files you will need in the next two steps.  
 
 
-### configure source/DEM/SPLAT_RADIOPROP/splatBurst.h:
+### configure DEM/SPLAT_RADIOPROP/splatBurst.h:
  
 * replace SDF DEM files path in radterrain/SPLAT_RADIOPROP/splatBurst.h with the correct path to SDF files folder as in:
 ```
@@ -98,7 +98,7 @@ mpicxx -O2 -s -fomit-frame-pointer -ffast-math -pipe -march=$cpu $model -I$PYTHO
 
 make sure before compilation that your boost_python libraries (e.g. 'libboost_python310.so') is in the folder BOOST_LIB_LOCATION ('/usr/lib/').
 
-* build twice by running source/DEM/SPLAT_RADIOPROP/build_mpi for parallel computing as grid and as polar: 
+* build twice by running DEM/SPLAT_RADIOPROP/build_mpi for parallel computing as grid and as polar: 
 ```
 ./build_mpi los_and_loss
 ```
@@ -107,7 +107,7 @@ make sure before compilation that your boost_python libraries (e.g. 'libboost_py
 ```
 
 ### check compilation
-* ensure that the following object files are generated in the folder source/DEM/SPLAT_RADIOPROP/: libsplathd.so, splat, splat-hd, mpi_radial_los_and_loss, mpi_los_and_loss
+* ensure that the following object files are generated in the folder DEM/SPLAT_RADIOPROP/: libsplathd.so, splat, splat-hd, mpi_radial_los_and_loss, mpi_los_and_loss
     
 ### Notes
 

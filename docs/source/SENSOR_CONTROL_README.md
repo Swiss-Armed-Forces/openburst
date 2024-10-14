@@ -1,7 +1,7 @@
 # 
 ## Sensor Control
 
-See source code in source/sensorcontrol
+See source code in openburst/sensorcontrol
 
 ### Active Radar
 * only targets inside RAD max range is considered for detection. see function: run_rad in sensorcontrol.py.
