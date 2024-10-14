@@ -11,6 +11,6 @@ def test_get_dem_files():
     try:
         for fname in os.listdir(splatconstants.DEM_FILES_PATH):
           if not fname.endswith('.sdf'):
-            pytest.fail("not .sdf file found in folder..")
+            pytest.fail("non .sdf file found in folder..please remove all non .sdf files from this folder")
     except Exception: # pylint: disable=bare-except
         pytest.fail("Could not read sdf files from dem folder ..")
