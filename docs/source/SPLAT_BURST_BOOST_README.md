@@ -27,7 +27,7 @@ done
 ```
 chmod +x ./script.sh && ./script.sh
 ```
-* move all the .sdf files to a separate folder. This is the folder containing the Digital Elevation Model (DEM) files you will need in the next two steps.  
+* move all the .sdf files to a separate folder. This is the folder containing the Digital Elevation Model (DEM) .sdf files you will need in the next two steps. Please make sure this folder contains only the .sdf files you genrated (otherwise a corresponding unit test will fail later).  
 
 
 ### configure DEM/SPLAT_RADIOPROP/splatBurst.h:
