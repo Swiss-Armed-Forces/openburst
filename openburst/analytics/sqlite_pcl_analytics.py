@@ -1,18 +1,18 @@
 """
-    Module providing an example of exporting openBURST simulation data for analytis.
+    Module providing an example of exporting openBURST simulation data for analytics.
     passive radar detections are plotted and exported. 
 
     This module exports PCL detections from openBURST postgreSQL DB
     to an sqlite file for sharing. 
     
-    creates one sqlite file with following tables:
+    creates one sqlite file with the following tables:
         - PCL detection (table_name: pcl_plot)
         - target positions ground truth (table_name: target)
         - PCL transmitters (table_name: transmitter)
         - PCL receivers (table_name: receiver)
 
-    Futher, a live bistatic range-Doppler map is plotted.
-    In the end, the range-Doppler map ist saved as a png file. 
+    Further, a live bistatic range-Doppler map is plotted and 
+    saved as a png file. 
 
     The Listen/Notify mechanism of postgreSQL is used to note changes 
     in the pcl_detection table during the simulation. 
