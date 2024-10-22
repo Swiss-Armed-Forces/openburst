@@ -9,8 +9,12 @@ from openburst.constants import splatconstants
 
 def test_get_dem_files():
     try:
+        sdf_found = False
         for fname in os.listdir(splatconstants.DEM_FILES_PATH):
-          if not fname.endswith('.sdf'):
-            pytest.fail("non .sdf file found in folder..please remove all non .sdf files from this folder")
+          if fname.endswith('.sdf'):
+            sdf_found = True
+
+        if not sdf_found:
+          pytest.fail("not a single.sdf file found in folder..please check the DEM folder configuration in splatconstants.py")
     except Exception: # pylint: disable=bare-except
         pytest.fail("Could not read sdf files from dem folder ..")
