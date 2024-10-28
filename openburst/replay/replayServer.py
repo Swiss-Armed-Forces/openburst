@@ -180,10 +180,18 @@ def write_target_db_update(
             
             if (curr_ref_targ is not None):
                 curr_targ_id = (curr_ref_targ[0], curr_ref_targ[3])  # id_nr and name
+
+                # convert tuple entry: np.float64(x) to float(x), to avoid issues when writing to postgresql DB
+                for i in range(len(curr_ref_targ)):
+                    if isinstance(curr_ref_targ[i], np.float64):
+                        list_curr = list(curr_ref_targ)
+                        list_curr[i] = float(curr_ref_targ[i])
+                        curr_ref_targ = tuple(list_curr)
+                
                 if curr_targ_id not in seen:
                     ref_targ_list.append(curr_ref_targ)
                     seen.add(curr_targ_id)
-
+            #print("ref_targ_list: ", ref_targ_list)
     #  and then write all the ref targets at once to the DB
     if len(ref_targ_list) > 0:
         dbaccess.write_targets(tuple(ref_targ_list))
