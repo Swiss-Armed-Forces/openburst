@@ -50,7 +50,7 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     payload = json.loads(pcl_det_payload)
     rx_id = payload.get("data").get("rx_id")
     tx_id = payload.get("data").get("tx_id")
-    bi_range = payload.get("data").get("range") # bistatic range in [kms] (see pcldetectionrunner.py)
+    bi_range = payload.get("data").get("range") * 1000 # bistatic range in [m] (see pcldetectionrunner.py)
     bistatic_doppler = payload.get("data").get("doppler") # [dB]
     det_time = payload.get("data").get("det_time") # [milliseconds since the UNIX epoch January 1, 1970 00:00:00 UTC)
     det_time = math.floor(float(det_time)/1000.0) # [s] floored
@@ -59,7 +59,7 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     bistatic_velocity = payload.get("data").get("bistatic_velocity") # [m/s]
     query = """INSERT INTO pcl_plot VALUES (?,?,?,?,?,?,?,?,?,?)"""
     dat = ([bi_range, bistatic_doppler, bistatic_velocity, snr, 0, 0, plotid, rx_id, tx_id, det_time])
-    print("pcl dat: ", dat)
+    #print("pcl dat: ", dat)
     sqcur.execute(query, dat)
     sqcon.commit()
     
@@ -68,9 +68,19 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     target_lat = payload.get("data").get("tgt_lat") # target_lat
     target_lon = payload.get("data").get("tgt_lon") # target_lon
     target_height = payload.get("data").get("tgt_height") # target_height
-    query = """INSERT INTO target VALUES (?,?,?,?,?)"""
-    dat = ([target_id, det_time,target_lat, target_lon, target_height])
-    print("targ dat: ", dat)
+    
+    target_vx = payload.get("data").get("vx") # target_vx [m/s]
+    target_vy = payload.get("data").get("vy") # target_vy [m/s]
+    target_vz = payload.get("data").get("vz") # target_vz [m/s]
+    target_speed = math.sqrt(target_vx * target_vx + target_vy * target_vy + target_vz * target_vz) # [m/s]
+
+    alpha = math.degrees(math.atan2(target_vx, target_vy))
+    if alpha < 0:
+        alpha = 360 + alpha # now alpha is on degrees from north
+
+    query = """INSERT INTO target VALUES (?,?,?,?,?,?,?)"""
+    dat = ([target_id, det_time,target_lat, target_lon, target_height, alpha, target_speed])
+    #print("targ dat: ", dat)
     sqcur.execute(query, dat)
     sqcon.commit()
 
@@ -113,7 +123,9 @@ if __name__ == "__main__":
             timestamp INTEGER NOT NULL,
             latitude REAL NOT NULL,
             longitude REAL NOT NULL,
-            height REAL NOT NULL
+            height REAL NOT NULL,
+            heading REAL NOT NULL,
+            speed REAL NOT NULL
         ); """
     sqlite_cur.execute(target)
 
