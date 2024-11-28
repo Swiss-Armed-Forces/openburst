@@ -22,6 +22,7 @@ import select
 import json
 import sqlite3
 import psycopg2
+import math
 
 import matplotlib.pyplot as plt
 from openburst.functions import dbfunctions
@@ -45,18 +46,20 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     function to write sqlite db with a given PCL detection
     """
     
-    # write the openburst pc detections
+    # write the openburst pcl detections
     payload = json.loads(pcl_det_payload)
     rx_id = payload.get("data").get("rx_id")
     tx_id = payload.get("data").get("tx_id")
-    range = payload.get("data").get("range") # bistatic range in [kms] (see pcldetectionrunner.py)
-    doppler = payload.get("data").get("doppler") # [dB]
+    bi_range = payload.get("data").get("range") # bistatic range in [kms] (see pcldetectionrunner.py)
+    bistatic_doppler = payload.get("data").get("doppler") # [dB]
     det_time = payload.get("data").get("det_time") # [milliseconds since the UNIX epoch January 1, 1970 00:00:00 UTC)
-    range = payload.get("data").get("range")
+    det_time = math.floor(float(det_time)/1000.0) # [s] floored
+    #bi_range = payload.get("data").get("range")
     snr = payload.get("data").get("snr") # [db] 
-    bistatic_velocity = payload.get("data").get("snr") # [m/s]
+    bistatic_velocity = payload.get("data").get("bistatic_velocity") # [m/s]
     query = """INSERT INTO pcl_plot VALUES (?,?,?,?,?,?,?,?,?,?)"""
-    dat = ([range, doppler, bistatic_velocity, snr, 0, 0, plotid, rx_id, tx_id, det_time])
+    dat = ([bi_range, bistatic_doppler, bistatic_velocity, snr, 0, 0, plotid, rx_id, tx_id, det_time])
+    print("pcl dat: ", dat)
     sqcur.execute(query, dat)
     sqcon.commit()
     
@@ -67,13 +70,14 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     target_height = payload.get("data").get("tgt_height") # target_height
     query = """INSERT INTO target VALUES (?,?,?,?,?)"""
     dat = ([target_id, det_time,target_lat, target_lon, target_height])
+    print("targ dat: ", dat)
     sqcur.execute(query, dat)
     sqcon.commit()
 
     global range_data
-    range_data.append(range)
+    range_data.append(bi_range)
     global doppler_data
-    doppler_data.append(doppler)
+    doppler_data.append(bistatic_doppler)
     global line1
     line1.set_ydata(doppler_data)
     line1.set_xdata(range_data)
@@ -90,9 +94,9 @@ if __name__ == "__main__":
 
     ## create a pcl plots table
     plot = """ CREATE TABLE IF NOT EXISTS pcl_plot (
-            range REAL NOT NULL,
-            doppler REAL NOT NULL,
-            velocity REAL NOT NULL,
+            bistatic_range REAL NOT NULL,
+            bistatic_doppler REAL NOT NULL,
+            bistatic_velocity REAL NOT NULL,
             SNR REAL,
             rangeSTD REAL,
             velocitySTD REAL,
@@ -147,7 +151,9 @@ if __name__ == "__main__":
     curs.execute("SELECT * FROM blue_live.pcl_tx")
     for tx in curs.fetchall():
         sql = """INSERT INTO transmitter VALUES (?,?,?,?,?,?,?,?)"""
-        data = ([tx[4], tx[5], tx[7]+tx[8], tx[1], tx[10], tx[9], tx[1], tx[0]])
+        # postgresql table: 0: tx_id, 1: callsign, 2: sitename, 3: team, 4: lat, 5: lon, 6: status, 7: masl, 8: ahmagl, 9: signal_type, 10: freq, 11: erp_h, 12: erp_v, 13: bandwidth, 14: horz_att, 15: vert_att, 16: pol
+        # needed: lat, lon, height, frequency, bandwidth, type, name, txid
+        data = ([tx[4], tx[5], tx[7]+tx[8], tx[10], tx[13], tx[9], tx[1], tx[0]])
         sqlite_cur.execute(sql, data)
         sqlite_con.commit()
 

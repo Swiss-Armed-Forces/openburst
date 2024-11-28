@@ -375,7 +375,8 @@ class PCLRunnerClass(mp.Process):
         # Doppler shift was good enough if we reached this far, see above. 
         # So just check the snr and the rcs_thresholds
         if (snr > snr_thresh) and (rcs < minimal_rcs_threshold): # snr and snr_thresh in [dB]
-            # doppler velocity
+            # (bistatic_dopppler_shift = (1/signal_wavelength) * bistatic_range_rate) (equation for bistatic doppler computation)
+            # from the above you can derive: doppler velocity ()= bistatic_range_rate), where signal_wavelength = c/f
             bistatic_velocity = doppler * (sc.speed_of_light/(tx.freq * 1000000)) # [Hz] * [m/s]/[Hz] = [m/s]
 
             # write PCL detections to DB 
