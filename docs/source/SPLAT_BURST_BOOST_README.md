@@ -27,16 +27,16 @@ done
 ```
 chmod +x ./script.sh && ./script.sh
 ```
-* move all the .sdf files to a separate folder. This is the folder containing the Digital Elevation Model (DEM) .sdf files you will need in the next two steps. Please make sure that this folder contains only the .sdf files you generated. A corresponding unit test will fail otherwise.  
+* move all the .sdf files to a separate folder. This is the folder containing the Digital Elevation Model (DEM) files you will need in the next two steps.  
 
 
-### configure DEM/SPLAT_RADIOPROP/splatBurst.h:
+### configure radterrain/SPLAT_RADIOPROP/splatBurst.h:
  
 * replace SDF DEM files path in radterrain/SPLAT_RADIOPROP/splatBurst.h with the correct path to SDF files folder as in:
 ```
 char burst_dem_path[] = "~/Downloads/SRTM3_Eurasia_Data/SDF_Files/";
 ```
-(make sure to have the forward slash "/" at the end of the pathname as above)
+(make sure have the forward slash "/" at the end of the pathname as above)
 
 * set std-params (a high number as e.g. below so that long distance propagation losses can be calculated):
  

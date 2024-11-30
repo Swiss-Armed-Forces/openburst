@@ -1,0 +1,25 @@
+name: openBURST draft
+on: [push]
+
+jobs:
+  pdf-generation:
+    name: run-pdf
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        id: checkout-code
+        uses: actions/checkout@v2
+      - name: Compile Paper
+        id: generate-files
+        uses: openjournals/openjournals-draft-action@master
+        with:
+          journal: joss
+          paper-path: ./docs/source/paper.md
+      - name: Upload PDF file 
+        id: upload-pdf
+        uses: actions/upload-artifact@v4
+        with:
+          name: joss_paper
+          path: ./docs/source/paper.pdf
+    
+    

@@ -10,11 +10,6 @@ name = "openburst"
 description = "A target and sensor simulator for air surveillance"
 version = "1.0"
 readme = "README.md"
-authors = [
-  {name = "Zenon Mathews", email = "zenon.mathews@vtg.admin.ch"},
-  {name = "Romain Chessex", email = "romain.chessex@vtg.admin.ch"},
-]
-
 dependencies = [
     'pyproj>=3.5.0',
     'psutil>=5.9.5',
@@ -39,8 +34,3 @@ dependencies = [
 
 license = {file = "LICENSE"}
 keywords = ["radar", "simulation", "passive radar", "target", "coverage", "detection", "air", "surveillance"]
-classifiers = [
-  "Development Status :: 4 - Beta",
-  "Programming Language :: Python, C++, html, javascript"
-]
-

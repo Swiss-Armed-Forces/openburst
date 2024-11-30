@@ -30,6 +30,7 @@ Openburst makes use of boost for parallel processing using mpi and for python-C+
 ### Compile Splat!
 
 Openburst uses the Splat! library for EM wave propagation loss computations. Openburst extends Splat! code with Boost and MPI libraries to parallelize the task on the available CPUs. Shared memory is used for sharing data between the parallel processes. Please note that Splat! code was extended for openBURST and therefore compilation is to be followed as instructed here: [radio_prop](SPLAT_BURST_BOOST_README.md). Installing Splat! with "sudo apt install splat" is not sufficient.
+Openburst uses the Splat! library for EM wave propagation loss computations. Openburst extends Splat! code with Boost and MPI libraries to parallelize the task on the available CPUs. Shared memory is used for sharing data between the parallel processes. Please note that Splat! code was extended for openBURST and therefore compilation is to be followed as instructed here: [radio_prop](SPLAT_BURST_BOOST_README.md). Installing Splat! with "sudo apt install splat" is not sufficient.
 
 
 ### openburst Installation
@@ -74,6 +75,9 @@ os.path.dirname(openburst.__file__)
 ```
 export OCTAVE_EXECUTABLE=/usr/bin/octave-cli
 ```
+### create and adapt openburst_config.py
+
+* in constants/ folder copy openburst_config_local.py to a new file openburst_config.py and replace all required user input values. 
 
 
 ### postgreSQL Datenbank

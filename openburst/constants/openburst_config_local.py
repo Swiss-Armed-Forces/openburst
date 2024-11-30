@@ -1,6 +1,5 @@
 """ this module defines postgresql DB parameters, server paths and websocket ports constants"""
 import os
-import inspect
 import openburst
 
 ########################################################################################

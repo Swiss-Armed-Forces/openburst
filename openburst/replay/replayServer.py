@@ -187,7 +187,7 @@ def write_target_db_update(
                         list_curr = list(curr_ref_targ)
                         list_curr[i] = float(curr_ref_targ[i])
                         curr_ref_targ = tuple(list_curr)
-                
+
                 if curr_targ_id not in seen:
                     ref_targ_list.append(curr_ref_targ)
                     seen.add(curr_targ_id)
