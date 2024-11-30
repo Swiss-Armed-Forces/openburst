@@ -34,9 +34,13 @@ We thankfully acknowledge the support from the the Swiss Armed Forces Staff for 
 ```
 Passive Radar Coverage Optimization, (Mousel P.) ETH Zurich Master Thesis April 2017
 ```
-We also thank the authors of publications that used earlier versions of openBURST:
+We thank the authors of publications that used earlier versions of openBURST:
 ```
 [1] Multi-static passive receiver location optimization in alpine terrain using a parallelized genetic algorithm, (Mathews, Quiriconi, Weber) IEEE Radar Conference 2015
 
 [2] Learning Resource Allocation in Active-Passive Radar Sensor Networks, (Mathews, Quiriconi, Weber), Frontiers in Signal Processing 2022
+```
+We also thank the editor, [Daniel S. Katz](https://github.com/danielskatz) and the reviewers [Hasan Tahir Abbas](https://github.com/hasantahir) and [Rohit Mendadhala](https://github.com/rvg296) of the openBURST [JOSS paper](https://joss.theoj.org/papers/10.21105/joss.07052). The JOSS review process has helped remarkably to improve openBURST documentation, installation process etc. 
+```
+[3] openBURST: Real-time air surveillance simulation and analysis for active and passive sensors, (Mathews, Chessex), Journal of Open Source Software, 2024, 9(103), 7052, https://doi.org/10.21105/joss.07052 
 ```

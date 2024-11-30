@@ -13,7 +13,7 @@ Welcome to openBURST's documentation!
 ..
    Sample sensor coverage and terrain backdrop
 
-openBURST is intended to provide the air surveillance sensor community with a framework 
+openBURST (on [GitHub](https://github.com/Swiss-Armed-Forces/openburst) and [JOSS](https://joss.theoj.org/papers/10.21105/joss.07052)) is intended to provide the air surveillance sensor community with a framework 
 for the development and testing of sensor coverage and real-time target detection analysis.  
 
 openBURST focuses on the overall performance assessment of a sensor network. Besides static coverage diagram computations, 
@@ -22,7 +22,7 @@ performance analysis of air picture generation in a given scenario. By providing
 and simulate active, passive, monostatic and multistatic sensors, it intends to support optimization efforts of 
 sensor portfolios for air surveillance.  
 
-openBURST is under active development and welcomes feedback and contributions. 
+openBURST is under active development [on GitHub](https://github.com/Swiss-Armed-Forces/openburst) and welcomes feedback and contributions.
 
 .. toctree::
    :maxdepth: 1
