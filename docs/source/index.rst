@@ -23,9 +23,9 @@ and simulate active, passive, monostatic and multistatic sensors, it intends to 
 sensor portfolios for air surveillance.  
 
 openBURST is under active development on GitHub_ and welcomes feedback and contributions.
-
-.. _GitHub: https://github.com/Swiss-Armed-Forces/openburst
-.. _JOSS: https://joss.theoj.org/papers/10.21105/joss.07052
+..
+   .. _GitHub: https://github.com/Swiss-Armed-Forces/openburst
+   .. _JOSS: https://joss.theoj.org/papers/10.21105/joss.07052
 
 .. toctree::
    :maxdepth: 1
