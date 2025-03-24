@@ -14,6 +14,7 @@ import multiprocessing as mp
 import time
 import sys
 import numpy as np
+import math
 import tornado.websocket
 
 from openburst.functions import basefunctions 
@@ -35,38 +36,63 @@ if sys.version_info[0] >= 3:
     Unicode = str
 
 
-def update_target_track(tgt_lat, tgt_lon, tgt_alt, tgt_ms_after_midnight, vlc, sampling_time, wayp_lat, wayp_lon, wayp_alt):
+def update_target_track(tgt_lat, tgt_lon, tgt_alt, tgt_ms_after_midnight, vlc, sampling_time, wayp_lat, wayp_lon, wayp_alt, tgt_vx, tgt_vy, tgt_vz, intended_heading):
     """ 
     Updates a given targets track
     vlc in [m/s] and sampling_time in [s]
     """
-    #print("##################################################################################")
-    #print("tgt: ", tgt_lat, tgt_lon, tgt_alt, ", wayp: ",  wayp_lat, wayp_lon, wayp_alt)
-    curr_heading = geofunctions.calculate_initial_compass_bearing((tgt_lat, tgt_lon), (wayp_lat, wayp_lon))
-    #print("curr_heading = ", curr_heading)
-    delta_xy = geofunctions.get_2d_distance_between_locs(tgt_lat, tgt_lon, wayp_lat, wayp_lon) * 1000.0 # [m]
-    #print("delta_xy = ", delta_xy)
-    delta_z = wayp_alt - tgt_alt # [m]
-    #print("delta_z = ", delta_z)
-    elev_angle = np.arctan2(delta_z, delta_xy)
-    #print("elev_angle = ", elev_angle)
-    vlc_z = vlc * np.sin(elev_angle)
-    vlc_xy = vlc * np.cos(elev_angle)
-    #print("vlc_z, vlc_xy =  = ", vlc_z, vlc_xy)
 
-    #dist_y = vlc_y * sampling_time # [m]
+    if ((abs(tgt_vx) > 0 ) or (abs(tgt_vy) > 0)):
+        alpha = math.degrees(math.atan2(tgt_vx, tgt_vy))
+        if alpha < 0:
+            alpha = 360 + alpha # now alpha is on degrees from north
+        curr_heading = alpha
+    else:
+        curr_heading = intended_heading
+    
+    tmp_heading = curr_heading * 0.99 + intended_heading * 0.01 # smoothing
+
+    # make sure that we turn in the shortest direction (work in progress)
+    delta_heading = abs(curr_heading - tmp_heading)
+    new_heading_one = curr_heading - delta_heading
+    if (new_heading_one < 0 ):
+        new_heading_one = 360.0 + new_heading_one
+    new_heading_two = curr_heading + delta_heading
+    if (new_heading_two > 360.0):
+        new_heading_two = new_heading_two - 360.0
+    if (abs(intended_heading - new_heading_one) < abs(intended_heading - new_heading_two)):
+        new_heading = new_heading_one
+    else:
+        new_heading = new_heading_two
+
+    if ((abs(tgt_vx) > 0 ) or (abs(tgt_vy) > 0) or (tgt_vz > 0)): # when atleast one velocity is non-zero
+        
+        delta_wayp_xy = geofunctions.get_2d_distance_between_locs(tgt_lat, tgt_lon, wayp_lat, wayp_lon) * 1000.0 # [m]
+        delta_z = wayp_alt - tgt_alt # [m]
+        elev_angle = np.arctan2(delta_z, delta_wayp_xy)
+        vlc_z = vlc * np.sin(elev_angle)
+        vlc_xy = vlc * np.cos(elev_angle)
+
+        #print("delta_z = ", delta_z, ", delta_xy = ", delta_wayp_xy, ", elev_angle = ", elev_angle, ", vlc_xy [m/s] = ", vlc_xy, ", vlc_z [m/s] = ", vlc_z, ", vlc = ", vlc)
+
+    else:    # in the beginning when all velocities are zero
+        delta_wayp_xy = geofunctions.get_2d_distance_between_locs(tgt_lat, tgt_lon, wayp_lat, wayp_lon) * 1000.0 # [m]
+        delta_z = wayp_alt - tgt_alt # [m]
+        elev_angle = np.arctan2(delta_z, delta_wayp_xy)
+        vlc_z = vlc * np.sin(elev_angle)
+        vlc_xy = vlc * np.cos(elev_angle)
+        
+    new_lat_lon = geofunctions.burstvincentydistance((tgt_lat, tgt_lon), (vlc_xy*sampling_time)/1000, new_heading)
     tgt_new_alt = tgt_alt + vlc_z * sampling_time
-    #print("tgt_new_alt = ", tgt_new_alt)
-    dist_xy = vlc_xy * sampling_time # [m]
-    #print("dist_xy = ", dist_xy)
-    new_lat_lon = geofunctions.burstvincentydistance((tgt_lat, tgt_lon), dist_xy/1000, curr_heading)
+
     vx = geofunctions.get_2d_distance_between_locs(tgt_lat, new_lat_lon.longitude, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lon axis
     vy = geofunctions.get_2d_distance_between_locs(new_lat_lon.latitude,  tgt_lon, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lat axis 
-    vz = vlc_z # [m/s] on z axis
+    vz = (tgt_new_alt - tgt_alt) / sampling_time # vlc_z # [m/s] on z axis
+    
 
-    if (wayp_lat < tgt_lat):
+    if (new_lat_lon.latitude < tgt_lat):
         vy = -1 * abs(vy)
-    if (wayp_lon < tgt_lon):
+    if (new_lat_lon.longitude < tgt_lon):
         vx = -1 * abs(vx)
     if (wayp_alt < tgt_alt):
         vz = -1 * abs(vz)
@@ -98,6 +124,10 @@ def create_target_replay_track(target, waypoint_dct):
     tgt_track_arr = [datetime_ind, 0, tgt_id, tgt_lat, tgt_lon, 0, speed, tgt_alt, track_quality, ms_after_midnight, tgt_vlx, tgt_vly, tgt_vlz]
     
     sampling_time = replayconstants.NEW_TARGET_SAMPLING_TIME # [s] 
+    tgt_vx = 0 
+    tgt_vy = 0 
+    tgt_vz = 0
+
     for j in range(1, len(target_locations)):
         try:
             loc = target_locations[j]
@@ -106,23 +136,29 @@ def create_target_replay_track(target, waypoint_dct):
             #wayp_terrainHeight = float(loc['terrainHeight'])
             wayp_alt = float(loc['flightHeight'])
             dist_to_wayp = 10000 # [km]
-            max_dist_per_sample = speed * sampling_time/3600.0 # [km]  
+            max_dist_per_sample = 200* speed * sampling_time/3600.0 # [km]  # we change waypoint before reaching the waypoint, to have smoothe curves
+            #print(":::::::::::: max_dist_per_sample [km] = ", max_dist_per_sample, ", dist_to_wayp [km]: ", dist_to_wayp )
             
-            while (dist_to_wayp > (max_dist_per_sample*1.5)): # [km]
-                #print("speed = ", speed, ", sampling_time = ", sampling_time, ", max_dist_per_sample = ", max_dist_per_sample, ", dist_to_wayp = ", dist_to_wayp)
+            
+
+            while (dist_to_wayp > (max_dist_per_sample)): # [km]
                 dist_to_wayp = geofunctions.get_2d_distance_between_locs_heights(tgt_lat, tgt_lon, tgt_alt, wayp_lat, wayp_lon, wayp_alt) # [km]
-                [tgt_new_alt, new_lat_lon, heading, new_ms_after_mid, tgt_vx, tgt_vy, tgt_vz] = update_target_track(tgt_lat, tgt_lon, tgt_alt, ms_after_midnight, vlc, sampling_time, wayp_lat, wayp_lon, wayp_alt)
+                intended_heading = geofunctions.calculate_initial_compass_bearing((tgt_lat, tgt_lon), (wayp_lat, wayp_lon))
+                [tgt_new_alt, new_lat_lon, heading, new_ms_after_mid, tgt_vx, tgt_vy, tgt_vz] = update_target_track(tgt_lat, tgt_lon, tgt_alt, ms_after_midnight, vlc, sampling_time, wayp_lat, wayp_lon, wayp_alt, tgt_vx, tgt_vy, tgt_vz, intended_heading)
+                
                 tgt_lat = new_lat_lon[0]
                 tgt_lon = new_lat_lon[1]
                 tgt_alt = tgt_new_alt
                 ms_after_midnight = new_ms_after_mid
-                newrow =  [datetime_ind, 0, tgt_id, tgt_lat, tgt_lon, heading, speed, tgt_alt, track_quality, ms_after_midnight, tgt_vx, tgt_vy, tgt_vz]
-                #print("new row = ", newrow)
+                newrow =  [datetime_ind, 0, tgt_id, tgt_lat, tgt_lon, heading, speed, tgt_alt, track_quality, ms_after_midnight, tgt_vx, tgt_vy, tgt_vz]                
                 tgt_track_arr = np.vstack([tgt_track_arr, newrow])
             
-        except: # pylint: disable=bare-except # pylint: disable=bare-except
-            logging.getLogger("SENSOR_CONTROL").info("warning: key error in waypoint target_locations...")
+        except Exception as e: # pylint: disable=bare-except # pylint: disable=bare-except
+            logging.getLogger("SENSOR_CONTROL").info("warning: key error in waypoint target_locations...: %s ", e)
             
+
+        logging.getLogger("SENSOR_CONTROL").info("finished logging wayp: %s, for target: %s", j, tgt_id)
+
     np_arr = np.array(tgt_track_arr)
     return np_arr
     
@@ -142,6 +178,7 @@ def insert_air_target_tracks(request_received):
     all_tgts_np_arr = np.empty([0,13])
     #for i in range(0, len(target_array)):
     print("target_array = ", target_array)
+    
     for i, tgt in enumerate(target_array):
         #tgt = target_array[i]
         print("target = ", tgt)
@@ -158,10 +195,11 @@ def insert_air_target_tracks(request_received):
             else:
                 tgt_np_arr = create_target_replay_track(tgt, wayp)
                 all_tgts_np_arr = np.vstack([all_tgts_np_arr, tgt_np_arr])
-                
+            
     # sort array by ms_after_midnight
     # DateTimeIndex, millisecs, converted_integer_id, lat, lon, heading[0 = north..180 = south..360 = north], speed[km / h], altitude[m], track_quality, milli_secs_after_midnight, tgt_vx [vel m/s on lon axis], tgt_vy [vel m/s on lat axis], tgt_vz [vel m/s on z axis]
     all_tgts_np_arr = all_tgts_np_arr[all_tgts_np_arr[:,9].argsort()] # sort with time milli_secs_after_midnight
+    
 
     try:
         # the user input targets are saved as a replay file as "user_targets_datetime.npy" in the replay/DATA folder
