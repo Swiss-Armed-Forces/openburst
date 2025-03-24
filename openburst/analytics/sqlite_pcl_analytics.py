@@ -52,37 +52,55 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     tx_id = payload.get("data").get("tx_id")
     bi_range = payload.get("data").get("range") * 1000 # bistatic range in [m] (see pcldetectionrunner.py)
     bistatic_doppler = payload.get("data").get("doppler") # [dB]
-    det_time = payload.get("data").get("det_time") # [milliseconds since the UNIX epoch January 1, 1970 00:00:00 UTC)
+    #det_time = payload.get("data").get("det_time") # [milliseconds since the UNIX epoch January 1, 1970 00:00:00 UTC)
+    det_time = payload.get("data").get("target_time") # [milliseconds since the UNIX epoch January 1, 1970 00:00:00 UTC), we are using the target tables update_time and not the sensor time
     det_time = math.floor(float(det_time)/1000.0) # [s] floored
     #bi_range = payload.get("data").get("range")
     snr = payload.get("data").get("snr") # [db] 
     bistatic_velocity = payload.get("data").get("bistatic_velocity") # [m/s]
     query = """INSERT INTO pcl_plot VALUES (?,?,?,?,?,?,?,?,?,?)"""
     dat = ([bi_range, bistatic_doppler, bistatic_velocity, snr, 0, 0, plotid, rx_id, tx_id, det_time])
-    #print("pcl dat: ", dat)
+    #print("sqllite_pcl_analytics pcl_dat: ", dat)
     sqcur.execute(query, dat)
     sqcon.commit()
     
     # write target ground truth
     target_id = payload.get("data").get("targ_id") # target_id
-    target_lat = payload.get("data").get("tgt_lat") # target_lat
-    target_lon = payload.get("data").get("tgt_lon") # target_lon
-    target_height = payload.get("data").get("tgt_height") # target_height
+
+    # first check if this target and this det_time (target_time) already exists
+    #sqcur.execute("""SELECT * from target WHERE timestamp = (%s);""", (det_time,))
+    write_ok = True
+    #c.execute('SELECT * FROM stocks WHERE symbol=?', t)
+
+    sqcur.execute(
+            """SELECT * FROM target WHERE targetid=? and timestamp=?""",
+            (
+                target_id,
+                det_time,
+            ),
+        )         
+    if sqcur.fetchone() is not None:  # target_id with timestamp exists
+            write_ok = False
     
-    target_vx = payload.get("data").get("vx") # target_vx [m/s]
-    target_vy = payload.get("data").get("vy") # target_vy [m/s]
-    target_vz = payload.get("data").get("vz") # target_vz [m/s]
-    target_speed = math.sqrt(target_vx * target_vx + target_vy * target_vy + target_vz * target_vz) # [m/s]
+    if (write_ok): # write only if this target position for this timestamp was not already written by other sensor detections
+        target_lat = payload.get("data").get("tgt_lat") # target_lat
+        target_lon = payload.get("data").get("tgt_lon") # target_lon
+        target_height = payload.get("data").get("tgt_height") # target_height
+    
+        target_vx = payload.get("data").get("vx") # target_vx [m/s]
+        target_vy = payload.get("data").get("vy") # target_vy [m/s]
+        target_vz = payload.get("data").get("vz") # target_vz [m/s]
+        target_speed = math.sqrt(target_vx * target_vx + target_vy * target_vy + target_vz * target_vz) # [m/s]
 
-    alpha = math.degrees(math.atan2(target_vx, target_vy))
-    if alpha < 0:
-        alpha = 360 + alpha # now alpha is on degrees from north
+        alpha = math.degrees(math.atan2(target_vx, target_vy))
+        if alpha < 0:
+            alpha = 360 + alpha # now alpha is on degrees from north
 
-    query = """INSERT INTO target VALUES (?,?,?,?,?,?,?)"""
-    dat = ([target_id, det_time,target_lat, target_lon, target_height, alpha, target_speed])
-    #print("targ dat: ", dat)
-    sqcur.execute(query, dat)
-    sqcon.commit()
+        query = """INSERT INTO target VALUES (?,?,?,?,?,?,?)"""
+        dat = ([target_id, det_time,target_lat, target_lon, target_height, alpha, target_speed])
+        #print("targ dat: ", dat)
+        sqcur.execute(query, dat)
+        sqcon.commit()
 
     global range_data
     range_data.append(bi_range)
