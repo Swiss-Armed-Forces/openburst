@@ -495,7 +495,7 @@ class ReplayWebSocketHandler(tornado.websocket.WebSocketHandler):
                 logging.getLogger("REPLAY").info("test_file_name: %s", test_file_name)
 
                 tmp_json = json.loads(request_received.args[2])
-                replayconstants.SAMPLING_TIME = int(tmp_json)
+                replayconstants.SAMPLING_TIME = float(tmp_json) #int(tmp_json)
                 logging.getLogger("REPLAY").info("SAMPLING_TIME = %s", replayconstants.SAMPLING_TIME)
 
                 tmp_json = json.loads(request_received.args[3])
