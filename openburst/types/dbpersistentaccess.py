@@ -385,10 +385,10 @@ class DbConnector():
 
     def write_pcl_dets(self, tup):
         """! adds a tuple of PCL detections to blue_live.pcl_detection"""
-        # rx_id, tx_id, pcl_rx_name, pcl_tx_callsign,targ_id, det_time, range, doppler, tgt_lat, tgt_lon, tgt_height, recording_time, vx, vy, vz, velocity, bistatic_velocity, snr
+        # rx_id, tx_id, pcl_rx_name, pcl_tx_callsign,targ_id, det_time, range, doppler, tgt_lat, tgt_lon, tgt_height, recording_time, vx, vy, vz, velocity, bistatic_velocity, snr, target_time
         with self.conn.cursor() as cur:
             args_str = b",".join(
-                cur.mogrify("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", x)
+                cur.mogrify("(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", x)
                 for x in tup
             )
             try:
@@ -398,10 +398,10 @@ class DbConnector():
                     + b" ON CONFLICT (pcl_rx_name, pcl_tx_callsign,targ_id) "
                     b"DO UPDATE SET "
                     b"(rx_id, tx_id, pcl_rx_name, pcl_tx_callsign,targ_id, det_time, range, doppler, "
-                    b"tgt_lat, tgt_lon, tgt_height, recording_time, vx, vy, vz, velocity, bistatic_velocity, snr) = "
+                    b"tgt_lat, tgt_lon, tgt_height, recording_time, vx, vy, vz, velocity, bistatic_velocity, snr, target_time) = "
                     b"(EXCLUDED.rx_id, EXCLUDED.tx_id, EXCLUDED.pcl_rx_name, EXCLUDED.pcl_tx_callsign, EXCLUDED.targ_id, "
                     b"EXCLUDED.det_time, EXCLUDED.range, EXCLUDED.doppler, EXCLUDED.tgt_lat, "
-                    b"EXCLUDED.tgt_lon, EXCLUDED.tgt_height, EXCLUDED.recording_time, EXCLUDED.vx, EXCLUDED.vy, EXCLUDED.vz, EXCLUDED.velocity, EXCLUDED.bistatic_velocity, EXCLUDED.snr)"
+                    b"EXCLUDED.tgt_lon, EXCLUDED.tgt_height, EXCLUDED.recording_time, EXCLUDED.vx, EXCLUDED.vy, EXCLUDED.vz, EXCLUDED.velocity, EXCLUDED.bistatic_velocity, EXCLUDED.snr, EXCLUDED.target_time)"
                 )
             except psycopg2.Error as e:
                 self.logger.error(e)
