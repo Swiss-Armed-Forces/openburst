@@ -402,7 +402,8 @@ class PCLRunnerClass(mp.Process):
                 str(tgt.vz),
                 str(tgt.velocity),
                 str(bistatic_velocity),
-                str(snr) 
+                str(snr),
+                str(tgt.update_time) 
             )
             writelist.append(currstr)
             self.dbaccess.write_pcl_dets(tuple(writelist))
