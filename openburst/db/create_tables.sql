@@ -233,6 +233,7 @@ CREATE TABLE blue_live.pcl_detection
   velocity double precision,
   bistatic_velocity double precision,
   snr double precision,
+  target_time double precision,
   CONSTRAINT pcl_detection_pkey PRIMARY KEY (pcl_rx_name, pcl_tx_callsign, targ_id)
 )
 WITH (
