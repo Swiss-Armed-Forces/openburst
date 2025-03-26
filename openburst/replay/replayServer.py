@@ -51,7 +51,9 @@ def write_target_db_update(
     if (data.shape[0]) < 1:
         return
 
-    curr_time = data[0][1]
+    #print("data: ", data)
+
+    curr_target_time = data[0][1]
 
     test_targ_list = []
     seen = (
@@ -342,6 +344,7 @@ class ReplayRunnerClass(mp.Process):
                 ind_data[2],
                 ind_data2[2],
             )
+            #print("ind_data2 = ", ind_data2)
             write_target_db_update(self.dbaccess, ind_data, 0, self.tgt_rcs)  # test
             write_target_db_update(self.dbaccess, ind_data2, 1, self.tgt_rcs)  # ref
 

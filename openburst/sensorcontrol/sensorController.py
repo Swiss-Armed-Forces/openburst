@@ -97,6 +97,7 @@ def update_target_track(tgt_lat, tgt_lon, tgt_alt, tgt_ms_after_midnight, vlc, s
     if (wayp_alt < tgt_alt):
         vz = -1 * abs(vz)
     #print("(new lat/lon: ", new_lat_lon.latitude,new_lat_lon.longitude, ", lat/lon: ", tgt_lat, tgt_lon, "-------vx, vy, vz = ", vx, vy, vz)
+    #print("tgt_ms_after_midnight + sampling_time*1000: ", tgt_ms_after_midnight + sampling_time*1000)
     return [tgt_new_alt, (new_lat_lon.latitude, new_lat_lon.longitude), curr_heading, tgt_ms_after_midnight + sampling_time*1000, vx, vy, vz]
 
 

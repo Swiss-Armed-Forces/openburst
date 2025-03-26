@@ -7,7 +7,6 @@
     
     creates one sqlite file with the following tables:
         - PCL detection (table_name: pcl_plot)
-        - target positions ground truth (table_name: target)
         - PCL transmitters (table_name: transmitter)
         - PCL receivers (table_name: receiver)
 
@@ -18,28 +17,27 @@
     in the pcl_detection table during the simulation. 
 
 """
+import math
 import select
 import json
 import sqlite3
 import psycopg2
-import math
-
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from openburst.functions import dbfunctions
 
-plt.ion()
+# plt.ion()
 
-fig = plt.figure()
-ax = fig.add_subplot(111)
-ax.plot([], [], lw=2)
-ax.set_ylim(-100, 100) # doppler [Hz]
-ax.set_xlim(0, 100) # range [km]
-plt.xlabel('bistatic range [km]') 
-plt.ylabel('bistatic Doppler shift [Hz]') 
-ax.grid()
-range_data, doppler_data = [], []
-line1, = ax.plot(range_data, doppler_data, 'r.')
-plt.show()
+# fig = plt.figure()
+# ax = fig.add_subplot(111)
+# ax.plot([], [], lw=2)
+# ax.set_ylim(-100, 100) # doppler [Hz]
+# ax.set_xlim(0, 100) # range [km]
+# plt.xlabel('bistatic range [km]') 
+# plt.ylabel('bistatic Doppler shift [Hz]') 
+# ax.grid()
+# range_data, doppler_data = [], []
+# line1, = ax.plot(range_data, doppler_data, 'r.')
+# plt.show()
 
 def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     """
@@ -54,7 +52,8 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     bistatic_doppler = payload.get("data").get("doppler") # [dB]
     #det_time = payload.get("data").get("det_time") # [milliseconds since the UNIX epoch January 1, 1970 00:00:00 UTC)
     det_time = payload.get("data").get("target_time") # [milliseconds since the UNIX epoch January 1, 1970 00:00:00 UTC), we are using the target tables update_time and not the sensor time
-    det_time = math.floor(float(det_time)/1000.0) # [s] floored
+    
+    #det_time = math.floor(float(det_time)/1000.0) # [s] floored
     #bi_range = payload.get("data").get("range")
     snr = payload.get("data").get("snr") # [db] 
     bistatic_velocity = payload.get("data").get("bistatic_velocity") # [m/s]
@@ -63,55 +62,53 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     #print("sqllite_pcl_analytics pcl_dat: ", dat)
     sqcur.execute(query, dat)
     sqcon.commit()
-    
+    print(dat)
     # write target ground truth
-    target_id = payload.get("data").get("targ_id") # target_id
+    ###
+    # target_id = payload.get("data").get("targ_id") # target_id
 
     # first check if this target and this det_time (target_time) already exists
-    #sqcur.execute("""SELECT * from target WHERE timestamp = (%s);""", (det_time,))
-    write_ok = True
-    #c.execute('SELECT * FROM stocks WHERE symbol=?', t)
-
-    sqcur.execute(
-            """SELECT * FROM target WHERE targetid=? and timestamp=?""",
-            (
-                target_id,
-                det_time,
-            ),
-        )         
-    if sqcur.fetchone() is not None:  # target_id with timestamp exists
-            write_ok = False
+    # write_ok = True
+    # sqcur.execute(
+    #         """SELECT * FROM target WHERE targetid=? and timestamp=?""",
+    #         (
+    #             target_id,
+    #             det_time,
+    #         ),
+    #     )         
+    # if sqcur.fetchone() is not None:  # target_id with timestamp exists
+    #         write_ok = False
     
-    if (write_ok): # write only if this target position for this timestamp was not already written by other sensor detections
-        target_lat = payload.get("data").get("tgt_lat") # target_lat
-        target_lon = payload.get("data").get("tgt_lon") # target_lon
-        target_height = payload.get("data").get("tgt_height") # target_height
+    # if (write_ok): # write only if this target position for this timestamp was not already written by other sensor detections
+    #     target_lat = payload.get("data").get("tgt_lat") # target_lat
+    #     target_lon = payload.get("data").get("tgt_lon") # target_lon
+    #     target_height = payload.get("data").get("tgt_height") # target_height
     
-        target_vx = payload.get("data").get("vx") # target_vx [m/s]
-        target_vy = payload.get("data").get("vy") # target_vy [m/s]
-        target_vz = payload.get("data").get("vz") # target_vz [m/s]
-        target_speed = math.sqrt(target_vx * target_vx + target_vy * target_vy + target_vz * target_vz) # [m/s]
+    #     target_vx = payload.get("data").get("vx") # target_vx [m/s]
+    #     target_vy = payload.get("data").get("vy") # target_vy [m/s]
+    #     target_vz = payload.get("data").get("vz") # target_vz [m/s]
+    #     target_speed = math.sqrt(target_vx * target_vx + target_vy * target_vy + target_vz * target_vz) # [m/s]
 
-        alpha = math.degrees(math.atan2(target_vx, target_vy))
-        if alpha < 0:
-            alpha = 360 + alpha # now alpha is on degrees from north
+    #     alpha = math.degrees(math.atan2(target_vx, target_vy))
+    #     if alpha < 0:
+    #         alpha = 360 + alpha # now alpha is on degrees from north
 
-        query = """INSERT INTO target VALUES (?,?,?,?,?,?,?)"""
-        dat = ([target_id, det_time,target_lat, target_lon, target_height, alpha, target_speed])
-        #print("targ dat: ", dat)
-        sqcur.execute(query, dat)
-        sqcon.commit()
+    #     query = """INSERT INTO target VALUES (?,?,?,?,?,?,?)"""
+    #     dat = ([target_id, det_time,target_lat, target_lon, target_height, alpha, target_speed])
+    #     #print("targ dat: ", dat)
+    #     sqcur.execute(query, dat)
+    #     sqcon.commit()
 
-    global range_data
-    range_data.append(bi_range)
-    global doppler_data
-    doppler_data.append(bistatic_doppler)
-    global line1
-    line1.set_ydata(doppler_data)
-    line1.set_xdata(range_data)
-    global fig
-    fig.canvas.draw()
-    fig.canvas.flush_events()
+    # global range_data
+    # range_data.append(bi_range)
+    # global doppler_data
+    # doppler_data.append(bistatic_doppler)
+    # global line1
+    # line1.set_ydata(doppler_data)
+    # line1.set_xdata(range_data)
+    # global fig
+    # fig.canvas.draw()
+    # fig.canvas.flush_events()
 
     
 
@@ -136,16 +133,16 @@ if __name__ == "__main__":
     sqlite_cur.execute(plot)
 
     ## create a targets table (ground truth)
-    target = """ CREATE TABLE IF NOT EXISTS target (
-            targetid INTEGER NOT NULL,
-            timestamp INTEGER NOT NULL,
-            latitude REAL NOT NULL,
-            longitude REAL NOT NULL,
-            height REAL NOT NULL,
-            heading REAL NOT NULL,
-            speed REAL NOT NULL
-        ); """
-    sqlite_cur.execute(target)
+    # target = """ CREATE TABLE IF NOT EXISTS target (
+    #         targetid INTEGER NOT NULL,
+    #         timestamp INTEGER NOT NULL,
+    #         latitude REAL NOT NULL,
+    #         longitude REAL NOT NULL,
+    #         height REAL NOT NULL,
+    #         heading REAL NOT NULL,
+    #         speed REAL NOT NULL
+    #     ); """
+    # sqlite_cur.execute(target)
 
     ## create a transmitter table
     transmitter = """ CREATE TABLE IF NOT EXISTS transmitter (
@@ -210,6 +207,7 @@ if __name__ == "__main__":
                     notify = conn.notifies.pop(0)
                     pcl_det_to_sqlite(notify.payload, sqlite_cur, sqlite_con, plot_id)
                     plot_id = plot_id + 1
+                
                     
 
     except KeyboardInterrupt:
@@ -230,10 +228,10 @@ if __name__ == "__main__":
         for row in res:
             print(row)
 
-        print("-------------------------- printing and plotting all targets sqlite DB------------ ")
-        res = cur.execute("SELECT * FROM target")
-        for row in res:
-            print(row)
+        # print("-------------------------- printing and plotting all targets sqlite DB------------ ")
+        # res = cur.execute("SELECT * FROM target")
+        # for row in res:
+        #     print(row)
 
         print("-------------------------- printing and plotting all receivers sqlite DB------------ ")
         res = cur.execute("SELECT * FROM receiver")
@@ -248,4 +246,4 @@ if __name__ == "__main__":
         con.close()
 
         # save range-dopller plot
-        plt.savefig("range_doppler_map.png") 
+        # plt.savefig("range_doppler_map.png") 
