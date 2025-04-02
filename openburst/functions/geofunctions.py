@@ -13,6 +13,7 @@ from haversine import haversine  # for computing distance between two (lat, lon)
 from geographiclib.geodesic import Geodesic
 from pyproj import Proj, transform # needed for transforming from Lat/Long to CH Lv93 coordinates
 from openburst.functions import basefunctions
+from openburst.constants.pclconstants import _USE_CARTESIAN
 
 def get_azimuth_between_locs(lat1, lon1, lat2, lon2):
 
@@ -105,6 +106,8 @@ def get_chf_from_deg(lat, lon):
     lv = transform(p_world,p_ch, lon, lat, 0)
     return lv 
 
+
+
 def get_bistatic_range(tx_latlonalt, rx_latlonalt, tgt_latlonalt):
     """ returns bistatic range [km],  tgt_rx_range [km], tgt_tx_range [km], baseline_range [km])
         for given Tx, Rx and Target
@@ -113,9 +116,11 @@ def get_bistatic_range(tx_latlonalt, rx_latlonalt, tgt_latlonalt):
         input tgt: lat, lon, alt[masl]
         definition bistatic range [km]  = distance(Tx -> Tgt -> Rx ) - distance(Rx->Tx) 
     """
+    
     tx_tgt_range = get_2d_distance_between_locs_heights(tx_latlonalt[0], tx_latlonalt[1], tx_latlonalt[2], tgt_latlonalt[0], tgt_latlonalt[1], tgt_latlonalt[2])
     tgt_rx_range = get_2d_distance_between_locs_heights(rx_latlonalt[0], rx_latlonalt[1], rx_latlonalt[2], tgt_latlonalt[0], tgt_latlonalt[1], tgt_latlonalt[2])
     tx_rx_range = get_2d_distance_between_locs_heights(tx_latlonalt[0], tx_latlonalt[1], tx_latlonalt[2], rx_latlonalt[0], rx_latlonalt[1], rx_latlonalt[2])
+
     return (tx_tgt_range + tgt_rx_range  - tx_rx_range, tgt_rx_range, tx_tgt_range, tx_rx_range)
 
 def calculate_bistatic_doppler(rx, tgt, tx):
@@ -132,6 +137,7 @@ def calculate_bistatic_doppler(rx, tgt, tx):
         The returned bistatic Doppler [Hz] value can be negative, depending on the 
         velocity vector of the target 
     """
+   
     rr1 = (
         get_2d_distance_between_locs_heights(
             tgt.lat, tgt.lon, tgt.height, rx.lat, rx.lon, rx.masl+rx.ahmagl
@@ -166,6 +172,7 @@ def calculate_bistatic_doppler(rx, tgt, tx):
     new_z = tgt.height + time_diff * tgt.vz
     
     # now compute bistatic range components R_T and R_R for the new target position
+    
     rr2 = (
         get_2d_distance_between_locs_heights(
             new_lat, new_lon, new_z, rx.lat, rx.lon, rx.masl+rx.ahmagl
@@ -177,7 +184,8 @@ def calculate_bistatic_doppler(rx, tgt, tx):
             tx.lat, tx.lon, tx.masl+tx.ahmagl, new_lat, new_lon, new_z
         )
         * 1000.0
-    )
+    )   
+
     # compute the rate of change for R_T (tx to target range) and R_R (tgt to rx range)
     
     rt_rate_of_change = (rt2-rt1)/time_diff
@@ -245,9 +253,49 @@ def get_clear_sky_attenuation(transmitter_freq):
 
     return atten_db
 
+def get_ecef_cartesian_from_lat_lon_height(lat_deg, lon_deg, h):
+    """
+    WGS84 to cooordinates  
+    returns cartesian coordinates given lat, lon and height using ecef cartesian transformation
+    h: height in meters
+    """
+
+    #lat_deg, lon_deg, h = ll
+    a = 6378137.0               # semi-major axis
+    #f = 1 / 298.257223563       # flattening
+    e2 = 0.006694380004260827    # first eccentricity squared
+
+    # Umwandlung in Radiant
+    lat = np.radians(lat_deg)
+    lon = np.radians(lon_deg)
+
+    sin_lat = np.sin(lat)
+    cos_lat = np.cos(lat)
+    sin_lon = np.sin(lon)
+    cos_lon = np.cos(lon)
+
+    N = a / np.sqrt(1 - e2 * sin_lat**2)
+
+    x = (N + h) * cos_lat * cos_lon
+    y = (N + h) * cos_lat * sin_lon
+    z = (N * (1 - e2) + h) * sin_lat
+
+    return([x,y,z])
+
+def get_2d_distance_between_locs_heights_ecef(lat1, lon1, h1, lat2, lon2, h2):
+    """
+    returns distance in kilometers between two lat lons and heights using ecef cartesian transformation
+    h1, h2: meters
+    """
+    p1 = get_ecef_cartesian_from_lat_lon_height(lat1, lon1, h1)
+    p2 = get_ecef_cartesian_from_lat_lon_height(lat2, lon2, h2)
+    dist = np.linalg.norm(np.array(p1)-np.array(p2))
+    return dist/1000.0 # [km]
+
+
 def get_2d_distance_between_locs_heights(lat1, lon1, h1, lat2, lon2, h2):
     """
-    returns distance in kilometers between two lat lons and heights.
+    returns distance in kilometers between two lat lons and heights using the haversine formula
     geopy.distance does NOT consider altitude!! the solution below with haversine formula compared to geopy.distance without height are at 220km are identical upto a difference below 50m
     the solution here is not exactly correct, but good enough for our purposes
     for large geodesic distances (ie large distance on the ellipsoid surface) the difference is less than a few hundred meters
@@ -255,6 +303,9 @@ def get_2d_distance_between_locs_heights(lat1, lon1, h1, lat2, lon2, h2):
     see e.g. http://cosinekitty.com/compass.html
     h1, h2: meters
     """
+
+    if (_USE_CARTESIAN):
+        return get_2d_distance_between_locs_heights_ecef(lat1, lon1, h1, lat2, lon2, h2)
 
     p1 = (lat1, lon1)
     p2 = (lat2, lon2)

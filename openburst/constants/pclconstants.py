@@ -17,3 +17,6 @@ MAX_COHERENT_INTEGRATION_TIME_FM = 0.5
 
 # we set a minimal bistatic rcs for online detection (i.e. the target is only detected if its bistatic RCS is above this value)
 MIN_BISTATIC_RCS_ONLINE_DETECTION = 10.0 # [m]
+
+# set to TRUE to use Cartesian bistatic_range computation (if false the haversine function is used)
+_USE_CARTESIAN = True
