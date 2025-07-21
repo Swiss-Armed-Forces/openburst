@@ -2,7 +2,7 @@
 ## Compilation with Splat!
 
 ### Download SRTM files:
-* from: [viewfinderpanoramas.org](http://www.viewfinderpanoramas.org/Coverage%20map%20viewfinderpanoramas_org3.htm)
+* from: [viewfinderpanoramas.org](http://www.viewfinderpanoramas.org/Coverage%20map%20viewfinderpanoramas_org1.htm)
 * as described in: [onetransistor.eu](https://www.onetransistor.eu/2016/07/splat-rf-compile-setup.html)
 * make sure you download all the SRTM files (.hgt)
 
