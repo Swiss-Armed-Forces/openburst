@@ -6,10 +6,11 @@ CREATE OR REPLACE FUNCTION notify_trigger() RETURNS trigger AS $$
 	DECLARE
 		data1 json;
 		notification json;
-		channel_name varchar DEFAULT (TG_TABLE_SCHEMA || '_' || TG_TABLE_NAME || '');
+		channel_name varchar;
 		
 				
 	BEGIN
+		channel_name := TG_TABLE_SCHEMA || '_' || TG_TABLE_NAME;
 		raise notice 'noticing channel: %', channel_name;
 		IF TG_OP = 'INSERT' THEN
 			
@@ -63,10 +64,6 @@ CREATE TRIGGER blue_live_pcl_tx_trigger AFTER INSERT OR UPDATE OR DELETE ON blue
 ----TRIGGER FOR table: blue_live.target
 DROP TRIGGER IF EXISTS blue_live_target_trigger on blue_live.target;
 CREATE TRIGGER blue_live_target_trigger AFTER INSERT OR UPDATE OR DELETE ON blue_live.target FOR EACH ROW EXECUTE PROCEDURE notify_trigger();
-
-----TRIGGER FOR table: red_live.target
-DROP TRIGGER IF EXISTS red_live_target_trigger on red_live.target;
-CREATE TRIGGER red_live_target_trigger AFTER INSERT OR UPDATE OR DELETE ON red_live.target FOR EACH ROW EXECUTE PROCEDURE notify_trigger();
 
 ----TRIGGER FOR table: blue_live.detection
 DROP TRIGGER IF EXISTS blue_live_detection_trigger on blue_live.detection;

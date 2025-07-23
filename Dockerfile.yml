@@ -1,0 +1,169 @@
+FROM ubuntu:25.04
+
+ENV OCTAVE_EXECUTABLE=/usr/bin/octave-cli
+ENV PYTHON_VERSION="python3.13"
+ENV KML_FILE_PATH="/KML_FILES"
+ENV BURST_DB_NAME="red"
+ENV BURST_DB_SERVER_IP="172.20.10.5"
+ENV BURST_DB_SERVER_USERNAME="red3"
+ENV BURST_DB_SERVER_PASSWORD="red"
+ENV DEM_SERVER_PORT="9978"
+ENV RAD_SERVER_PORT="3333"
+ENV PET_SERVER_PORT="7824"
+ENV GEOPLOT_SERVER_PORT="9943"
+ENV DB_SERVER_PORT="7234"
+ENV SENSOR_CONTROL_SERVER_PORT="7982"
+ENV DETECTION_SIM_SERVER_PORT="7983"
+ENV REBOUND_SERVER_PORT="7112"
+ENV PCL_SERVER_PORT="7999"
+ENV REPLAY_SERVER_PORT="9945"
+ENV RADIOPROP_SERVER_PORT="9980"
+
+####################
+# PCL CONSTANTS
+####################
+# [s] a pcl plot lives for max this much time if not updated
+ENV PCL_PLOT_LIFETIME="2"
+# [km] , max range considered between target and Rx for detection
+ENV MAX_TGT_RX_RANGE="180"
+# [km] , max range considered between target and Tx for detection
+ENV MAX_TGT_TX_RANGE="180"
+# [dB], SNR threshold for detection
+ENV SNR_THRESHOLD="15.0"
+# [dB], for detection
+ENV DOPPLER_THRESHOLD="2.0"
+# [m2], for detection
+ENV MIN_RCS_THRESHOLD="150.0"
+# [s], update rate for pcl detection
+ENV SENSOR_UPDATE_TIME="1"
+# maximum coherent integration time in [s]
+# (use appropriate values for different signals)
+ENV MAX_COHERENT_INTEGRATION_TIME_FM="0.5"
+# we set a minimal bistatic rcs for online detection [m]
+# (i.e. the target is only detected if its bistatic RCS is above this value)
+ENV MIN_BISTATIC_RCS_ONLINE_DETECTION="10.0"
+# set to 1 to use Cartesian bistatic_range computation
+# (if 0 the haversine function is used)
+ENV _USE_CARTESIAN="1"
+
+#####################
+# Radar CONSTANTS
+#####################
+# mAGL (active radar antenna above ground level)
+ENV RADAR_Z_OFFSET="10"
+# mAGL (PET above ground level)
+ENV PET_Z_OFFSET="10"
+# [km], range resolution for radar coverage computation
+ENV RAD_COVERAGE_DISTANCE_STEP="0.5"
+# [deg], azimuth resolution for radar coverage computation 
+ENV RAD_COVERAGE_THETA_STEP="0.1"
+# [km], range resolution for radar coverage computation
+ENV PET_COVERAGE_DISTANCE_STEP="5.0"
+# [deg], azimuth resolution for radar coverage computation
+ENV PET_COVERAGE_THETA_STEP="0.9"
+
+#####################
+# Replay CONSTANTS
+#####################
+# communication key with the client
+ENV TEST_REPLAY_REPORT="5469"
+# communication key with the client
+ENV REF_REPLAY_REPORT="5471"
+# [s] default replay data DB write interval, this will be overwritten by client entry
+ENV REPLAY_DATA_DB_WRITE_INTERVAL="1.0"
+# [s] default sampling from the track file (ref and test), this will be overwritten by the client
+ENV SAMPLING_TIME="0.1"
+# [s] sampling time when writing new user designed targets
+ENV NEW_TARGET_SAMPLING_TIME="0.1"
+
+#####################
+# Splat Constants
+#####################
+# Earth Dielectric Constant (Relative permittivity)
+ENV DIEL_CONST="13.0"
+# Earth Conductivity (Siemens per meter)
+ENV EARTH_COND="0.002"
+# Atmospheric Bending Constant (N-units)
+ENV AT_BEND="301.00"
+# Radio Climate (5 = Continental Temperate)
+ENV RADIO_CLIMATE="5.0"
+# Polarization (0 = Horizontal, 1 = Vertical)
+ENV POL="0.0"
+# ground clutter in feet
+ENV GROUND_CLUTTER="0.0"
+# propagation model: 0 = IT_WOM, 1= longley_rice
+ENV OITM="0"
+# Fraction of situations (50% of locations)
+ENV FRAC_OF_SITU="0.5"
+# Fraction of time (90% of the time)
+ENV FRAC_OF_TIME="0.9"
+
+VOLUME /SRTM
+VOLUME /KML_FILES
+
+EXPOSE 8888
+
+RUN apt-get update && \
+    apt-get install -y \
+        curl \
+        python3 \
+        python3-dev \
+        python3-gdal \
+        python3-venv \
+        libbz2-dev \
+        postgresql \
+        libpq-dev \
+        postgresql-client \
+        postgresql-client-common \
+        postgresql-contrib \
+        multitail \
+        libpoco-dev \
+        build-essential \
+        g++ \
+        autotools-dev \
+        libicu-dev \
+        libboost-all-dev \
+        libboost-mpi-dev \
+        libmpich-dev \
+        openmpi-bin \
+        octave \
+        splat \
+        unzip \
+        python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl https://archives.boost.io/release/1.88.0/source/boost_1_88_0.tar.bz2 -o /boost.tar.bz2 && \
+    echo "46d9d2c06637b219270877c9e16155cbd015b6dc84349af064c088e9b5b12f7b /boost.tar.bz2" | sha256sum -c - && \
+    tar --bzip2 -xf boost.tar.bz2 && \
+    mv /boost_1_88_0 /boost && \
+    cp /boost/tools/build/example/user-config.jam $HOME/ && \
+    echo "using python : 3.13 : /usr/bin/python3.13 : /usr/include/python3.13 : /usr/lib/x86_64-linux-gnu ;" >> $HOME/user-config.jam && \
+    cd /boost; ./bootstrap.sh --prefix=/boost/TMP --with-libraries=python,mpi && \
+    cd /boost; ./b2 install
+COPY ./openburst /openburst_full/openburst
+RUN sed -i 's|python3.10|python3.13|g' /openburst_full/openburst/constants/openburst_config.py
+RUN sed -i 's|/home/red3/Downloads/SRTM3_Eurasia_Data/SDF_Files/|/SRTM/|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/splatBurst.h && \
+    sed -i 's|PYTHON_VERSION="3.10"|PYTHON_VERSION="3.13"|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/buildBurst && \
+    sed -i 's|PYTHON_INC="/usr/include/python3.10"|PYTHON_INC="/usr/include/python3.13"|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/buildBurst && \
+    sed -i 's|BOOST_LIB_FILE="boost_python310"|BOOST_LIB_FILE="boost_python313"|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/buildBurst && \
+    sed -i 's|BOOST_LIB_LOCATION="/usr/lib"|BOOST_LIB_LOCATION="/usr/lib/x86_64-linux-gnu"|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/buildBurst && \
+    sed -i 's|-lpython3.10|-lpython3.13|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/buildBurst
+RUN cd /openburst_full/openburst/radterrain/SPLAT_RADIOPROP; ./buildBurst splat_shared_lib
+RUN sed -i 's|PYTHON_VERSION="3.10"|PYTHON_VERSION="3.13"|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/build_mpi && \
+    sed -i 's|PYTHON_INC="/usr/include/python3.10"|PYTHON_INC="/usr/include/python3.13"|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/build_mpi && \
+    sed -i 's|BOOST_LIB_FILE="boost_python310"|BOOST_LIB_FILE="boost_python313"|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/build_mpi && \
+    sed -i 's|BOOST_LIB_LOCATION="/usr/lib"|BOOST_LIB_LOCATION="/usr/lib/x86_64-linux-gnu"|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/build_mpi && \
+    sed -i 's|-lboost_python310|-lboost_python313|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/build_mpi && \
+    sed -i 's|-lpython3.10|-lpython3.13|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/build_mpi
+RUN cd /openburst_full/openburst/radterrain/SPLAT_RADIOPROP; ./build splat
+RUN cd /openburst_full/openburst/radterrain/SPLAT_RADIOPROP; \
+    ./build_mpi los_and_loss; \
+    ./build_mpi radial_los_and_loss
+COPY ./pyproject.toml /openburst_full
+COPY ./LICENSE /openburst_full
+RUN python3 -m pip install --break-system-packages -e /openburst_full
+COPY ./entrypoint.sh /
+ENV PYTHONPATH="/openburst_full/openburst/radterrain/SPLAT_RADIOPROP:${PYTHONPATH}"
+
+ENTRYPOINT [ "/entrypoint.sh" ]
+RUN apt-get update && apt-get install nano

@@ -58,7 +58,7 @@ class LoginHandler(BaseHandler):
         elif "red" == getteamname:
             self.render("red.html")
         elif "theater" == getnode:
-            proxy_server_add = basefunctions.get_proxy_server_ws(basefunctions.get_myip(), str(proxy_port))
+            proxy_server_add = "ws://localhost:8888/proxy"
             print("burst_hmiserver: sending: ", proxy_server_add)
             self.render(
                 "bluetheater.html",
@@ -67,7 +67,7 @@ class LoginHandler(BaseHandler):
                 node=getnode,
             )
         elif "airpic" == getnode:
-            proxy_server_add = basefunctions.get_proxy_server_ws(basefunctions.get_myip(), str(proxy_port))
+            proxy_server_add = "ws://localhost:8888/proxy"
             self.render(
                 "blueairpic.html",
                 proxy_server=proxy_server_add,
@@ -112,8 +112,8 @@ class ProxyWebSocketHandler(tornado.websocket.WebSocketHandler):
         line = message
         logging.getLogger("HMI").info("proxy client wrote: %s", line)
         [ip, port] = dbfunctions.read_server_ip_port_from_db(line)
-        logging.getLogger("HMI").info("ip, port: %s,%s", ip, port)
-        retwsstr = "ws://" + ip + ":" + str(port) + "/" + line
+        logging.getLogger("HMI").info("ip, port: %s,%s", "localhost", port)
+        retwsstr = "ws://" + "localhost" + ":" + str(port) + "/" + line
         retval = [line, retwsstr]
         logging.getLogger("HMI").info("returning: %s", retval)
         self.write_message(json.dumps(retval))

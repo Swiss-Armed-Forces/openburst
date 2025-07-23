@@ -1,0 +1,109 @@
+services:
+
+  db:
+    image: docker.io/library/postgres:17.5
+    environment:
+      POSTGRES_USER: red3
+      POSTGRES_PASSWORD: red
+    volumes:
+      # Mount the initialisation scripts.
+      - type: bind
+        source: ./openburst/db
+        target: /docker-entrypoint-initdb.d
+      # Mount the directory where the database will be stored.
+      # We decide to mount instead of using a volume so we can create backups
+      # etc. more easily.
+      - type: bind
+        source: ../DOCKER_MOUNTS/data
+        target: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - internal
+  
+  openburst_base: &common-config
+    image: openburst:latest
+    environment:
+      BURST_DB_SERVER_IP: db
+      BURST_DB_SERVER_USERNAME: red3
+      BURST_DB_SERVER_PASSWORD: red
+      BURST_DB_NAME: red3
+      DEM_FILES_PATH: /SRTM
+      KML_FILE_PATH: /KML_FILES/
+    volumes:
+      - type: bind
+        source: /home/user/Downloads/tmp
+        target: /SRTM
+      - type: bind
+        source: /home/user/Downloads/Openburst_KML_FILES
+        target: /KML_FILES
+      - type: bind
+        source: /home/user/Downloads/openburst_tmp
+        target: /tmp
+      # - type: bind
+      #   source: /home/user/Downloads/openburst_splat_workdir
+      #   target: /openburst_full/openburst/radterrain/SPLAT_RADIOPROP
+    networks:
+      - internal
+    shm_size: '16gb'
+  
+  openburst_gui:
+    <<: *common-config
+    entrypoint: ["python3", "/openburst_full/openburst/webserver/webserver.py"]
+    ports:
+      - "8888:8888"
+
+  openburst_radterrain:
+    <<: *common-config
+    entrypoint: ["sh", "-c", "cd /openburst_full/openburst/radterrain && python3 /openburst_full/openburst/radterrain/radterrain.py"]
+    ports:
+      - "9978:9978"
+  
+  openburst_pet:
+    <<: *common-config
+    entrypoint: ["python3", "/openburst_full/openburst/pet/petserver.py"]
+    ports:
+      - "7824:7824"
+  
+  openburst_geoplot:
+    <<: *common-config
+    entrypoint: ["python3", "/openburst_full/openburst/geoplot/geoplotserver.py"]
+    ports:
+      - "9943:9943"
+  
+  openburst_sensorcontrol:
+    <<: *common-config
+    entrypoint: ["python3", "/openburst_full/openburst/sensorcontrol/sensorController.py"]
+    ports:
+      - "7982:7982"
+  
+  openburst_detection:
+    <<: *common-config
+    entrypoint: ["python3", "/openburst_full/openburst/detection/detection.py"]
+    ports:
+      - "7983:7983"
+  
+  openburst_pcl:
+    <<: *common-config
+    entrypoint: ["python3", "/openburst_full/openburst/pcl/pclserver.py"]
+    ports:
+      - "7999:7999"
+  
+  openburst_replay:
+    <<: *common-config
+    entrypoint: ["python3", "/openburst_full/openburst/replay/replayServer.py"]
+    ports:
+      - "9945:9945"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=SuperSecret
+    ports:
+      - "8080:80"
+    networks:
+      - internal
+
+networks:
+  internal:

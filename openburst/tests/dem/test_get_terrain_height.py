@@ -14,10 +14,10 @@ import libsplathd as splat
 
 def test_get_terrain_height():
     try:
-        #lat = 47.0
-        #lon = 8.1
-        lat = 57.41
-        lon = -6.19
+        lat = 47.0
+        lon = 8.1
+        # lat = 57.41
+        # lon = -6.19
         alt = geofunctions.get_terrain_height(splat,lat, lon)
         assert alt > -160 # we make sure that there is some masl read. assuming -160masl the lowest location below sea level
     except Exception: # pylint: disable=bare-except

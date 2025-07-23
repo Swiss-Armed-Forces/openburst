@@ -146,6 +146,9 @@
   self.addEventListener(
     "message",
     function (e) {
+      if (e.data.source == "react-devtools-content-script") {
+        return;
+      }
       console.log("----replayWorker.js got message from MAIN thread: ", e.data);
       // data coming in:
       var anz_x = e.data[0];

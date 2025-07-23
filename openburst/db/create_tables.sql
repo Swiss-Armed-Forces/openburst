@@ -6,12 +6,9 @@ CREATE TABLE blue_live.waypoint
   agl_asl integer,
   waypoints double precision[],
   CONSTRAINT waypoint_pkey PRIMARY KEY (id_nr, name)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE blue_live.waypoint
-  OWNER TO red3;
+  OWNER TO CURRENT_USER;
 
 
 CREATE TABLE blue_live.detection
@@ -37,12 +34,9 @@ CREATE TABLE blue_live.detection
   cvz double precision,
   recording_time double precision,
   CONSTRAINT my_table_pkey PRIMARY KEY (targ_id, sensor_id)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE blue_live.detection
-  OWNER TO red3;
+  OWNER TO CURRENT_USER;
 
 
 CREATE TABLE blue_live.rad
@@ -74,12 +68,9 @@ CREATE TABLE blue_live.rad
   update_time double precision,
   team character varying(15),
   CONSTRAINT rad_pkey PRIMARY KEY (id_nr, name)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE blue_live.rad
-  OWNER TO red3;
+  OWNER TO CURRENT_USER;
 
 
 CREATE TABLE blue_live.target
@@ -109,12 +100,9 @@ CREATE TABLE blue_live.target
   terrainheight integer,
   recording_time double precision,
   CONSTRAINT target_pkey PRIMARY KEY (id_nr, name)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE blue_live.target
-  OWNER TO red3;
+  OWNER TO CURRENT_USER;
 
 
 
@@ -128,12 +116,9 @@ CREATE TABLE blue_live.targettrigger
   dist_to_poi double precision,
   poi_id_nr integer,
   CONSTRAINT targettrigger_pkey PRIMARY KEY (id_nr, name)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE blue_live.targettrigger
-  OWNER TO red3;
+  OWNER TO CURRENT_USER;
 
 
 CREATE TABLE blue_live.poi
@@ -144,12 +129,9 @@ CREATE TABLE blue_live.poi
   lat double precision,
   lon double precision,
   CONSTRAINT poi_pkey PRIMARY KEY (id_nr, name)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE blue_live.poi
-  OWNER TO red3;
+  OWNER TO CURRENT_USER;
 
 
 CREATE TABLE admin.servers(name varchar(15), ip varchar(15), port integer, status varchar(15), info varchar(20));
@@ -176,12 +158,9 @@ CREATE TABLE blue_live.pcl_rx
   update_time double precision,
   txcallsigns character varying(8000),
   CONSTRAINT pcl_rx_pkey PRIMARY KEY (name)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE blue_live.pcl_rx
-  OWNER TO red3;
+  OWNER TO CURRENT_USER;
 
 
 CREATE TABLE blue_live.pcl_tx
@@ -205,12 +184,9 @@ CREATE TABLE blue_live.pcl_tx
   pol character varying(5),
       	    
   CONSTRAINT pcl_tx_pkey PRIMARY KEY (callsign)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE blue_live.pcl_tx
-  OWNER TO red3;
+  OWNER TO CURRENT_USER;
 
 
 CREATE TABLE blue_live.pcl_detection
@@ -235,9 +211,6 @@ CREATE TABLE blue_live.pcl_detection
   snr double precision,
   target_time double precision,
   CONSTRAINT pcl_detection_pkey PRIMARY KEY (pcl_rx_name, pcl_tx_callsign, targ_id)
-)
-WITH (
-  OIDS=FALSE
 );
 ALTER TABLE blue_live.pcl_detection
-  OWNER TO red3;
+  OWNER TO CURRENT_USER;
