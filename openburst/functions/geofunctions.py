@@ -239,6 +239,46 @@ def calculate_bistatic_doppler(rx, tgt, tx):
     return doppler_shift
 
 
+def calculate_std_devs_for_bistatic_detection(rx_pos, tx_pos, tgt_pos, snr_db, tx_freq_hz, tx_bw_hz, t_obs_s):
+    
+    """ 
+    calculates range and vel std deviations of bistatic range and velocity calculations
+    input rx_pos: rx position
+    input tx_pos: tx position
+    input tgt_pos: target position
+    input snr_db: SNR of detection
+    input tx_frq_hz: Tx freq [Hz]
+    tx_bw_hz: signal bandwidth [Hz]
+    t_obs_s: coherent integration time [s]
+        
+    returns:
+    sigma_rho : standard deviation of bistatic range
+    sigma_v: standard deviation of bistatic radial velocity
+    """
+    snr = 10**(snr_db/10)
+    beta = bistatic_angle(rx_pos, tx_pos, tgt_pos)
+    beta_rms = 0.3 * tx_bw_hz
+
+    sigma_tau = 1 / (2*np.pi*beta_rms*np.sqrt(2*snr))
+    sigma_rho = sc.c * sigma_tau
+
+    sigma_f = 1 / (2*np.pi*t_obs_s*np.sqrt(2*snr))
+    lam = sc.c / tx_freq_hz
+    sigma_v = (lam / (2*np.cos(0.5*beta))) * sigma_f
+
+    return (sigma_rho, sigma_v)
+
+
+
+def bistatic_angle(rx_pos, tx_pos, tgt_pos):
+    """
+    calculates bistatic_angle [rad] given rx, tx and tgt positions
+    """
+    rx_vec = np.array(rx_pos) - np.array(tgt_pos)
+    tx_vec = np.array(tx_pos) - np.array(tgt_pos)
+    cosb = np.dot(rx_vec, tx_vec) / (np.linalg.norm(rx_vec) * np.linalg.norm(tx_vec))
+    return np.arccos(cosb)
+
 def monostatic_doppler(
     freq, rad_lat, rad_lon, rad_alt, tgt_lat, tgt_lon, tgt_alt, tgt_vx, tgt_vy, tgt_vz
 ):

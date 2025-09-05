@@ -46,9 +46,13 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     #bi_range = payload.get("data").get("range")
     snr = payload.get("data").get("snr") # [db] 
     bistatic_velocity = payload.get("data").get("bistatic_velocity") # [m/s]
+
+    range_std_dev = payload.get("data").get("std_dev_bist_range") # std deviation of bistatic range
+    vel_std_dev = payload.get("data").get("std_dev_bist_vel") # std deviation of bistatic vel
+
     query = """INSERT INTO plot VALUES (?,?,?,?,?,?,?,?,?)"""
     # needed: id INTEGER, range REAL, velocity REAL, SNR REAL, rangeStd REAL, velocityStd REAL, rxId INTEGER, txId INTEGER, timestamp INTEGER NOT NULL, 
-    dat = ([plot_id, bi_range, bistatic_velocity, snr, 0, 0, rx_id, tx_id, det_time])
+    dat = ([plot_id, bi_range, bistatic_velocity, snr, range_std_dev, vel_std_dev, rx_id, tx_id, det_time])
     #print("sqllite_pcl_analytics pcl_dat: ", dat)
     sqcur.execute(query, dat)
     sqcon.commit()
