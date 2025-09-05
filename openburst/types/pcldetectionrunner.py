@@ -39,6 +39,7 @@ class PCLRunnerClass(mp.Process):
         while not self.alive.is_set():
             time1 = basefunctions.get_time()
             targets = self.dbaccess.get_targets("blue")
+            
             if targets is None:
                 time.sleep(self.update_time)
                 continue
@@ -205,6 +206,14 @@ class PCLRunnerClass(mp.Process):
         ################## now check bistatic Doppler and return if Doppler shift too low
         doppler = 0
         doppler = geofunctions.calculate_bistatic_doppler(rx, tgt, tx) # [Hz]
+        #doppler_cartesian = geofunctions.calculate_bistatic_doppler_cartesian(rx, tgt, tx) # [Hz]
+        #doppler = geofunctions.calculate_bistatic_doppler_cartesian(rx, tgt, tx) # [Hz]
+
+        #bistatic_vel = doppler * (sc.speed_of_light/(tx.freq * 1000000)) 
+        #bistatic_vel_new = doppler_cartesian * (sc.speed_of_light/(tx.freq * 1000000)) 
+
+        #print("doppler orig/new: ", doppler, doppler_cartesian)
+        #print("bistati_vel_orig/new: ", bistatic_vel, bistatic_vel_new)
 
         # discontinue without detection if bistatic Doppler is too low
         if abs(doppler) < doppler_thresh:

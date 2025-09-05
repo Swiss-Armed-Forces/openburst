@@ -127,7 +127,8 @@ def write_target_db_update(
         set()
     )  # a set to make sure the same target (id_nr and name) is only added once
     if data_type == 1:  # red data = team = blue
-        for i in reversed(range(len(data))):
+        #for i in reversed(range(len(data))):
+        for i in range(len(data)):
             id_nr = int(
                 re.sub("\D", "", str(data[i][2]))
             )  # remove all strings from the id_nr
@@ -190,9 +191,12 @@ def write_target_db_update(
                         list_curr[i] = float(curr_ref_targ[i])
                         curr_ref_targ = tuple(list_curr)
 
+                
                 if curr_targ_id not in seen:
                     ref_targ_list.append(curr_ref_targ)
                     seen.add(curr_targ_id)
+                
+
             #print("ref_targ_list: ", ref_targ_list)
     #  and then write all the ref targets at once to the DB
     if len(ref_targ_list) > 0:
@@ -206,7 +210,7 @@ def append_targets(curr_time, prev_time, array_nr, report_ID):
     """
     returns [curr_index, data_msg, noftracks, False]
     where data_msg is a 2D array with 2nd dimension indexing:
-    0: report_ID 1: recording_time, 2: id, 3: lat, 4: lon, 5: alt, 6: speed, 7: heading, 8: vx, 9: vy, 10: vz
+    0: datetime_ind, 1:0, 2:tgt_id, 3:tgt_lat, 4:tgt_lon, 5:0, 6:speed, 7:tgt_alt, 8:track_quality, 9:ms_after_midnight, 10:tgt_vlx, 11:tgt_vly, 12:tgt_vlz
     
     """
 
@@ -252,9 +256,10 @@ def append_targets(curr_time, prev_time, array_nr, report_ID):
         data_block = data_array[
             start_index:stop_index, [9, 2, 3, 4, 7, 6, 5, 10, 11, 12]
         ]  # recording_time[ms], id, lat, lon, alt, speed, heading, vx, vy, vz 
-    
-    #print("data_block = ", data_block)
-
+    print("--------------data_block--------")
+    for d in data_block:
+        print(d[1], d[0], d[2], d[3])
+       
     if array_nr == 1:
         prog = round(float(stop_index) / float(data_array.shape[0]), 3)
     else:
@@ -264,6 +269,7 @@ def append_targets(curr_time, prev_time, array_nr, report_ID):
     data_msg_2d = np.hstack((reports_id_column, data_block))
     data_msg = data_msg_2d.ravel()
     curr_index = stop_index
+
     return [curr_index, data_msg, noftracks, False]
 
 
@@ -329,6 +335,7 @@ class ReplayRunnerClass(mp.Process):
                 curr_time, prev_time, 1, replayconstants.REF_REPLAY_REPORT
             )  # curr_time and prev_time in [ms after midnight]
             ref_done = ind_data2[3]
+             
 
             try:
                 if (
@@ -338,13 +345,17 @@ class ReplayRunnerClass(mp.Process):
             except: # pylint: disable=bare-except
                 pass
 
+
+            # remove all targets from the db
+            # self.dbaccess.remove_targets("blue")
+
             # write replay data to DB
             logging.getLogger("REPLAY").info(
                 "going to write to DB: test tracks = %s, ref tracks = %s ",
                 ind_data[2],
                 ind_data2[2],
             )
-            #print("ind_data2 = ", ind_data2)
+
             write_target_db_update(self.dbaccess, ind_data, 0, self.tgt_rcs)  # test
             write_target_db_update(self.dbaccess, ind_data2, 1, self.tgt_rcs)  # ref
 

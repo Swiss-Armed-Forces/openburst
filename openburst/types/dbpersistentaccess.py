@@ -673,7 +673,27 @@ class DbConnector():
             except psycopg2.Error as e:
                 self.logger.error(e)
                 return None
-        
+    
+    def remove_targets(self, team):
+        """! removes all targets"""
+        table_name = "blue_live.target"
+        if team == "blue":
+            table_name = "blue_live.target"
+        elif team == "red":
+            table_name = "red_live.target"
+        with self.conn.cursor() as cur:     
+            try:
+                cur.execute(
+                    """DELETE FROM %s WHERE team = %s;""",
+                    (
+                        AsIs(table_name),
+                        team,
+                    ),
+                ) 
+
+            except psycopg2.Error as e:
+                self.logger.error(e)
+                
 
     def get_targets(self, team):
         """! returns all targets"""
@@ -686,7 +706,7 @@ class DbConnector():
         with self.conn.cursor() as cur:     
             try:
                 cur.execute(
-                    """SELECT * FROM %s WHERE team = %s;""",
+                    """SELECT * FROM %s WHERE team = %s ORDER BY recording_time;""",
                     (
                         AsIs(table_name),
                         team,

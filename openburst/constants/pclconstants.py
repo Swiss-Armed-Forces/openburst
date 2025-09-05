@@ -1,6 +1,6 @@
 """This module defines project-level constants for using PCL"""
 
-PCL_PLOT_LIFETIME = 2 # [s] a pcl plot lives for max this much time if not updated
+PCL_PLOT_LIFETIME = 0.5 # [s] a pcl plot lives for max this much time if not updated
 
 MAX_TGT_RX_RANGE = 180 # [km] , max range considered between target and Rx for detection
 MAX_TGT_TX_RANGE = 180 # [km] , max range considered between target and Tx for detection

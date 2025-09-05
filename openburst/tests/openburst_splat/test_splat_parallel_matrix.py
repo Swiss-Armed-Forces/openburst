@@ -25,7 +25,7 @@ def test_openburst_splat_parallel():
 
     nof_lats = 4
     nof_lons = 4
-    nofprocs = 6  # number of processes for MPI (ideally equal to number of cores)
+     = 6  # number of processes for MPI (ideally equal to number of cores)
 
     for uu in range(1):
         p_site = splat.prop_site()

@@ -81,15 +81,27 @@ def update_target_track(tgt_lat, tgt_lon, tgt_alt, tgt_ms_after_midnight, vlc, s
         elev_angle = np.arctan2(delta_z, delta_wayp_xy)
         vlc_z = vlc * np.sin(elev_angle)
         vlc_xy = vlc * np.cos(elev_angle)
-        
+    
+    # new cvx, vy, vz computations
+    vy = np.cos(new_heading * np.pi / 180.0 ) * vlc_xy 
+    vx = np.sin(new_heading * np.pi / 180.0 ) * vlc_xy
+    vz = vlc_z
+    #vxy_n = math.sqrt(vx_n*vx_n + vy_n*vy_n)
+
+
     new_lat_lon = geofunctions.burstvincentydistance((tgt_lat, tgt_lon), (vlc_xy*sampling_time)/1000, new_heading)
     tgt_new_alt = tgt_alt + vlc_z * sampling_time
 
-    vx = geofunctions.get_2d_distance_between_locs(tgt_lat, new_lat_lon.longitude, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lon axis
-    vy = geofunctions.get_2d_distance_between_locs(new_lat_lon.latitude,  tgt_lon, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lat axis 
-    vz = (tgt_new_alt - tgt_alt) / sampling_time # vlc_z # [m/s] on z axis
-    
+    # original vx, vy, vz computations
+    #vx = geofunctions.get_2d_distance_between_locs(tgt_lat, new_lat_lon.longitude, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lon axis
+    #vy = geofunctions.get_2d_distance_between_locs(new_lat_lon.latitude,  tgt_lon, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lat axis 
+    #vz = (tgt_new_alt - tgt_alt) / sampling_time # vlc_z # [m/s] on z axis
 
+    #vxy = math.sqrt(vx*vx + vy*vy)
+    #print("vlc_z : ", vlc_z , ", vz: ", vz, ", vxy : ", vxy, ", vlc_xy = ", vlc_xy)
+    #print("vx/vy: ", vx, vy , "vx_n/vy_n: ", vx_n, vy_n)
+    #print("vxy / vxy_n: ", vxy, vxy_n)
+    
     if (new_lat_lon.latitude < tgt_lat):
         vy = -1 * abs(vy)
     if (new_lat_lon.longitude < tgt_lon):
