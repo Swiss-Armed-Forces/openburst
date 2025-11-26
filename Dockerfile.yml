@@ -140,6 +140,14 @@ RUN curl https://archives.boost.io/release/1.88.0/source/boost_1_88_0.tar.bz2 -o
     echo "using python : 3.13 : /usr/bin/python3.13 : /usr/include/python3.13 : /usr/lib/x86_64-linux-gnu ;" >> $HOME/user-config.jam && \
     cd /boost; ./bootstrap.sh --prefix=/boost/TMP --with-libraries=python,mpi && \
     cd /boost; ./b2 install
+# Install Python dependencies only
+COPY ./pyproject.toml /openburst_full/
+RUN cd /openburst_full; pip install --break-system-packages $(python3 -c "import tomllib; \
+    import sys; \
+    d=tomllib.load(open('pyproject.toml','rb')); \
+    print(' '.join(d['project']['dependencies']))")
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/openburst_full/openburst/radterrain/SPLAT_RADIOPROP
+RUN apt-get update && apt-get install -y nano strace
 COPY ./openburst /openburst_full/openburst
 RUN sed -i 's|python3.10|python3.13|g' /openburst_full/openburst/constants/openburst_config.py
 RUN sed -i 's|/home/red3/Downloads/SRTM3_Eurasia_Data/SDF_Files/|/SRTM/|g' /openburst_full/openburst/radterrain/SPLAT_RADIOPROP/splatBurst.h && \
@@ -166,4 +174,3 @@ COPY ./entrypoint.sh /
 ENV PYTHONPATH="/openburst_full/openburst/radterrain/SPLAT_RADIOPROP:${PYTHONPATH}"
 
 ENTRYPOINT [ "/entrypoint.sh" ]
-RUN apt-get update && apt-get install nano

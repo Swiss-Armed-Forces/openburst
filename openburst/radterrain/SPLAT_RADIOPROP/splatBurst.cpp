@@ -634,7 +634,7 @@ GetLosAndLossReturn* prop_site::getLosAndLossRadial(float src_lat, float src_lon
     //////////////////////// start MPI processing of LOS computation /////////////////////////////////////////
 
  
-    std::string s("mpiexec -np " + std::to_string(nof_processes) + " ./SPLAT_RADIOPROP/mpi_radial_los_and_loss " + std::to_string(sizeof_mem_dem_array) + " " + std::to_string(lats_pushed)+ " " + std::to_string(lons_pushed) + " " + std::to_string(src_lat) + " " + std::to_string(src_lon) + " " +  std::to_string(src_alt) + " " +  std::to_string(dest_alt) + " " +  std::to_string(freq) + " " + std::to_string(asl)+ " " + std::to_string(nofPointsPerRay)+ " " + std::to_string(stopAtFirstLoS)+ " " + std::to_string(justLos) + " " + std::to_string(this->minlat) + " " + std::to_string(this->maxlat) + " " + std::to_string(this->minlon)+ " " + std::to_string(this->maxlon) );
+    std::string s("mpiexec --allow-run-as-root -np " + std::to_string(nof_processes) + " ./SPLAT_RADIOPROP/mpi_radial_los_and_loss " + std::to_string(sizeof_mem_dem_array) + " " + std::to_string(lats_pushed)+ " " + std::to_string(lons_pushed) + " " + std::to_string(src_lat) + " " + std::to_string(src_lon) + " " +  std::to_string(src_alt) + " " +  std::to_string(dest_alt) + " " +  std::to_string(freq) + " " + std::to_string(asl)+ " " + std::to_string(nofPointsPerRay)+ " " + std::to_string(stopAtFirstLoS)+ " " + std::to_string(justLos) + " " + std::to_string(this->minlat) + " " + std::to_string(this->maxlat) + " " + std::to_string(this->minlon)+ " " + std::to_string(this->maxlon) );
 
 
 
@@ -844,7 +844,7 @@ GetLosAndLossReturn* prop_site::getLosAndLossRadial(float src_lat, float src_lon
      //int aa = std::system(ss.c_str());
 
      fprintf(stdout, "================================= getLosAndLossMatrix: calling mpiexec \n");
-     std::string s("mpiexec -np " + std::to_string(nof_processes) + " ./SPLAT_RADIOPROP/mpi_los_and_loss " + std::to_string(sizeof_mem_dem_array) + " " + std::to_string(lats_pushed)+ " " + std::to_string(lons_pushed) + " " + std::to_string(src_lat) + " " + std::to_string(src_lon) + " " +  std::to_string(src_alt) + " " +  std::to_string(dest_alt) + " " +  std::to_string(freq) + " " + std::to_string(asl) + " " + std::to_string(justLos)+ " " + std::to_string(this->minlat) + " " + std::to_string(this->maxlat) + " " + std::to_string(this->minlon)+ " " + std::to_string(this->maxlon) + " " + std::to_string(reverseDirection));
+     std::string s("mpiexec --allow-run-as-root -np " + std::to_string(nof_processes) + " ./SPLAT_RADIOPROP/mpi_los_and_loss " + std::to_string(sizeof_mem_dem_array) + " " + std::to_string(lats_pushed)+ " " + std::to_string(lons_pushed) + " " + std::to_string(src_lat) + " " + std::to_string(src_lon) + " " +  std::to_string(src_alt) + " " +  std::to_string(dest_alt) + " " +  std::to_string(freq) + " " + std::to_string(asl) + " " + std::to_string(justLos)+ " " + std::to_string(this->minlat) + " " + std::to_string(this->maxlat) + " " + std::to_string(this->minlon)+ " " + std::to_string(this->maxlon) + " " + std::to_string(reverseDirection));
      int a = std::system(s.c_str());
      fprintf(stdout, "returned from mpi call = %d \n", a);
 
