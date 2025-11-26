@@ -6,7 +6,7 @@
 var Rx_circles = [];
 var Tx_circles = [];
 var rad_patt_layers = [];
-var running_pass_sens_id = 0;
+var running_pass_sens_id = 1;
 var layer_vector_lines = [];
 var RCS_heatmap_layers = [];
 var global_RCS_heat_map;

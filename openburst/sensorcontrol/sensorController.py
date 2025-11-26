@@ -137,7 +137,7 @@ def create_target_replay_track(target, waypoint_dct):
     tgt_track_arr = [datetime_ind, 0, tgt_id, tgt_lat, tgt_lon, 0, speed, tgt_alt, track_quality, ms_after_midnight, tgt_vlx, tgt_vly, tgt_vlz]
     
     sampling_time = replayconstants.NEW_TARGET_SAMPLING_TIME # [s] 
-    tgt_vx = 0 
+    tgt_vx = 0
     tgt_vy = 0 
     tgt_vz = 0
 
@@ -150,13 +150,16 @@ def create_target_replay_track(target, waypoint_dct):
             wayp_alt = float(loc['flightHeight'])
             dist_to_wayp = 10000 # [km]
             max_dist_per_sample = 200* speed * sampling_time/3600.0 # [km]  # we change waypoint before reaching the waypoint, to have smoothe curves
-            #print(":::::::::::: max_dist_per_sample [km] = ", max_dist_per_sample, ", dist_to_wayp [km]: ", dist_to_wayp )
+            print(":::::::::::: max_dist_per_sample [km] = ", max_dist_per_sample, ", dist_to_wayp [km]: ", dist_to_wayp )
             
             
 
             while (dist_to_wayp > (max_dist_per_sample)): # [km]
                 dist_to_wayp = geofunctions.get_2d_distance_between_locs_heights(tgt_lat, tgt_lon, tgt_alt, wayp_lat, wayp_lon, wayp_alt) # [km]
                 intended_heading = geofunctions.calculate_initial_compass_bearing((tgt_lat, tgt_lon), (wayp_lat, wayp_lon))
+                #tgt_vx = target["vx"]
+                #tgt_vy = target["vy"]
+                #tgt_vz = target["vz"]
                 [tgt_new_alt, new_lat_lon, heading, new_ms_after_mid, tgt_vx, tgt_vy, tgt_vz] = update_target_track(tgt_lat, tgt_lon, tgt_alt, ms_after_midnight, vlc, sampling_time, wayp_lat, wayp_lon, wayp_alt, tgt_vx, tgt_vy, tgt_vz, intended_heading)
                 
                 tgt_lat = new_lat_lon[0]

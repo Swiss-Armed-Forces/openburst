@@ -20,3 +20,7 @@ MIN_BISTATIC_RCS_ONLINE_DETECTION = 10.0 # [m]
 
 # set to TRUE to use Cartesian bistatic_range computation (if false the haversine function is used)
 _USE_CARTESIAN = True
+
+
+# detection error model parameters
+_ERROR_MODEL_ON = True

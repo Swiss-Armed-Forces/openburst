@@ -402,6 +402,8 @@ class PCLRunnerClass(mp.Process):
             # sigma_rho : standard deviation of bistatic range
             # sigma_v: standard deviation of bistatic radial velocity
             (sigma_rho, sigma_v) = geofunctions.calculate_std_devs_for_bistatic_detection(rx_pos, tx_pos, tgt_pos, snr_db, tx_freq_hz, tx_bw_hz, t_obs_s)
+            sigma_rho = np.clip(sigma_rho, 10.0, 100.0) # [m] clip range std dev to realistic values
+            sigma_v = np.clip(sigma_v, 0.5, 5.0) # [m/s] lip vel std dev to realistic values
             # print("sigma_rho, sigma_v = ", sigma_rho, sigma_v)
 
             # write PCL detections to DB 

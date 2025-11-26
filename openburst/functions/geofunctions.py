@@ -188,7 +188,7 @@ def calculate_bistatic_doppler(rx, tgt, tx):
     )
     
     # asuuming that the target will travel with the current velocity vector for the below time window
-    time_diff = 0.0001 # [s] # smaller differences in Doppler will be computed when using e.g. time_diss = 1s; 14.698740657943263  Vs 14.761600314371947
+    time_diff = 0.000001 # [s] # smaller differences in Doppler will be computed when using e.g. time_diss = 1s; 14.698740657943263  Vs 14.761600314371947
     
 
     # tgt.vx is the vel [m/s] along lon axis
@@ -196,8 +196,9 @@ def calculate_bistatic_doppler(rx, tgt, tx):
     # tgt.vz is vel [m/s] along z axis
     # see also methods: create_target_replay_track and update_target_track in sensorController module
     
-    tgt_total_vel = tgt.velocity * 1000/3600 # [m/s]
+    tgt_total_vel = tgt.velocity * 1000/3600 # [m/s] 
     tgt_xy_vel = math.sqrt(tgt_total_vel*tgt_total_vel - tgt.vz*tgt.vz) # [m/s]
+    #tgt_xy_vel = math.sqrt(tgt.vx*tgt.vx + tgt.vy*tgt.vy)
     alpha = math.degrees(math.atan2(tgt.vx, tgt.vy))
     if alpha < 0:
         alpha = 360 + alpha # now alpha is on degrees from north
@@ -208,6 +209,7 @@ def calculate_bistatic_doppler(rx, tgt, tx):
     new_lon = new_lat_lon.longitude # this is the predicted target_position lon with the given vel
     new_z = tgt.height + time_diff * tgt.vz
     
+    #print("new lat/lon: ", new_lat, ", ", new_lon, ", new_z: ", new_z)
 
     # now compute bistatic range components R_T and R_R for the new target position
     
@@ -443,7 +445,12 @@ def get_dest_loc_from_dist_and_angle(theta, dist):
 
 
 def burstvincentydistance(pnt, dist_km, brng):
-    """! returns the destination [lat/lon] point at distance dist_km[km] and at bearing brng[deg] from point pnt[lat/lon]"""
+    """
+    ! returns the destination [lat/lon] point at distance dist_km[km] and at bearing brng[deg] from point pnt[lat/lon];
+    default uses the geodesic distance; but also the great-circle distance can be used,
+    see: https://geopy.readthedocs.io/en/stable/
+    
+    """
     d = geopy.distance.distance(kilometers=dist_km)
     dest = d.destination(point=pnt, bearing=brng)
     return dest
