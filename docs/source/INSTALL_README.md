@@ -1,6 +1,22 @@
 
 #
 
+## Installation using podman (Docker)
+
+openBURST can be installed and launched easily using Docker / podman containers.
+
+You can build the openBURST Docker image by executing the following command in the repo root directory:
+
+```bash
+podman build -f Dockerfile.yml openburst:latest
+```
+
+Then, you can start all servers by executing the following command from the repo root directory:
+
+```bash
+podman-compose up -d
+```
+
 ## Installation
 
 * openBURST was installed and tested on an Intel 12th Gen processor with 12 cores and 32GB memory, Ubuntu 20 and 22 LTS 64-bit installations and python3.8 and python3.10. 
