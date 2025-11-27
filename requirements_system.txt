@@ -24,3 +24,4 @@ libboost-mpi-dev
 libmpich-dev 
 openmpi-bin
 octave
+pyproj

@@ -39,6 +39,7 @@ class PCLRunnerClass(mp.Process):
         while not self.alive.is_set():
             time1 = basefunctions.get_time()
             targets = self.dbaccess.get_targets("blue")
+            
             if targets is None:
                 time.sleep(self.update_time)
                 continue
@@ -205,6 +206,16 @@ class PCLRunnerClass(mp.Process):
         ################## now check bistatic Doppler and return if Doppler shift too low
         doppler = 0
         doppler = geofunctions.calculate_bistatic_doppler(rx, tgt, tx) # [Hz]
+
+        
+        #doppler_cartesian = geofunctions.calculate_bistatic_doppler_cartesian(rx, tgt, tx) # [Hz]
+        #doppler = geofunctions.calculate_bistatic_doppler_cartesian(rx, tgt, tx) # [Hz]
+
+        #bistatic_vel = doppler * (sc.speed_of_light/(tx.freq * 1000000)) 
+        #bistatic_vel_new = doppler_cartesian * (sc.speed_of_light/(tx.freq * 1000000)) 
+
+        #print("doppler orig/new: ", doppler, doppler_cartesian)
+        #print("bistati_vel_orig/new: ", bistatic_vel, bistatic_vel_new)
 
         # discontinue without detection if bistatic Doppler is too low
         if abs(doppler) < doppler_thresh:
@@ -379,6 +390,22 @@ class PCLRunnerClass(mp.Process):
             # from the above you can derive: doppler velocity ()= bistatic_range_rate), where signal_wavelength = c/f
             bistatic_velocity = doppler * (sc.speed_of_light/(tx.freq * 1000000)) # [Hz] * [m/s]/[Hz] = [m/s]
 
+
+            # calculate standard deviations of bistatic range and velocity 
+            rx_pos = geofunctions.convert_geodetic_to_cartesian(rx.lat, rx.lon, rx.masl + rx.ahmagl) # cartesian
+            tx_pos = geofunctions.convert_geodetic_to_cartesian(tx.lat, tx.lon, tx.masl + tx.ahmagl)  # cartesian
+            tgt_pos = geofunctions.convert_geodetic_to_cartesian(tgt.lat, tgt.lon, tgt.height) # cartesian
+            snr_db = snr
+            tx_freq_hz = tx.freq * 1000000 # [MHz] to [Hz]
+            tx_bw_hz =  tx.bandwidth * 1000 # [KHz] to [Hz]
+            t_obs_s = pclconstants.MAX_COHERENT_INTEGRATION_TIME_FM # we use the FM case; TBD for other signal types
+            # sigma_rho : standard deviation of bistatic range
+            # sigma_v: standard deviation of bistatic radial velocity
+            (sigma_rho, sigma_v) = geofunctions.calculate_std_devs_for_bistatic_detection(rx_pos, tx_pos, tgt_pos, snr_db, tx_freq_hz, tx_bw_hz, t_obs_s)
+            sigma_rho = np.clip(sigma_rho, 10.0, 100.0) # [m] clip range std dev to realistic values
+            sigma_v = np.clip(sigma_v, 0.5, 5.0) # [m/s] lip vel std dev to realistic values
+            # print("sigma_rho, sigma_v = ", sigma_rho, sigma_v)
+
             # write PCL detections to DB 
             now = basefunctions.get_time()
             writelist = []
@@ -403,7 +430,9 @@ class PCLRunnerClass(mp.Process):
                 str(tgt.velocity),
                 str(bistatic_velocity),
                 str(snr),
-                str(tgt.recording_time) 
+                str(tgt.recording_time),
+                str(sigma_rho),
+                str(sigma_v) 
             )
             writelist.append(currstr)
             self.dbaccess.write_pcl_dets(tuple(writelist))

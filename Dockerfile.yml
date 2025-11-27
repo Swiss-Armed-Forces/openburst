@@ -45,6 +45,7 @@ ENV MIN_BISTATIC_RCS_ONLINE_DETECTION="10.0"
 # set to 1 to use Cartesian bistatic_range computation
 # (if 0 the haversine function is used)
 ENV _USE_CARTESIAN="1"
+ENV _ERROR_MODEL_ON="1"
 
 #####################
 # Radar CONSTANTS

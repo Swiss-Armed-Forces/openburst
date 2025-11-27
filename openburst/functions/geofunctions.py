@@ -4,6 +4,7 @@ transformations to other projections.
 """
 
 import math
+import pyproj
 from numpy import linspace
 from numpy import meshgrid
 import numpy as np
@@ -123,6 +124,41 @@ def get_bistatic_range(tx_latlonalt, rx_latlonalt, tgt_latlonalt):
 
     return (tx_tgt_range + tgt_rx_range  - tx_rx_range, tgt_rx_range, tx_tgt_range, tx_rx_range)
 
+def calculate_bistatic_doppler_cartesian(rx, tgt, tx):
+    """ calculates bistatic Doppler in Hz
+        for given Tx, Rx and Target
+        input Tx: lat, lon, alt[masl], antenna height [magl]
+        input Rx: lat, lon, alt[masl], antenna height [magl]
+        input tgt: lat, lon, alt[masl]
+        returns Doppler shift in [Hz]  
+
+        The bistatic Doppler shift is computed from the rate of change (R_t + R_r) 
+        divided by the wavelength of tx signal
+
+        The returned bistatic Doppler [Hz] value can be negative, depending on the 
+        velocity vector of the target 
+    """
+    r1 = get_2d_distance_between_locs_heights_ecef(tgt.lat, tgt.lon, tgt.height, tx.lat, tx.lon, tx.masl+tx.ahmagl) * 1000 #[m]
+    r2 = get_2d_distance_between_locs_heights_ecef(tgt.lat, tgt.lon, tgt.height, rx.lat, rx.lon, rx.masl+rx.ahmagl) * 1000 #[m]
+    rb = get_2d_distance_between_locs_heights_ecef(tx.lat, tx.lon, tx.masl+tx.ahmagl, rx.lat, rx.lon, rx.masl+rx.ahmagl) * 1000 #[m]
+    r = r1+r2-rb
+
+
+    tgt_pos_cart =  convert_geodetic_to_cartesian(tgt.lat, tgt.lon, tgt.height)
+    tx_pos_cart =  convert_geodetic_to_cartesian(tx.lat, tx.lon, tx.masl+tx.ahmagl)
+    rx_pos_cart =  convert_geodetic_to_cartesian(rx.lat, rx.lon, rx.masl+rx.ahmagl)
+
+    r1_vec = np.array(tgt_pos_cart) - np.array(tx_pos_cart)
+    r2_vec = np.array(tgt_pos_cart) - np.array(rx_pos_cart)
+    r1_vec_normalized = r1_vec / r1
+    r2_vec_normalized = r2_vec / r2
+    
+    bistatic_vel = np.dot([r1_vec_normalized + r2_vec_normalized], [tgt.vx, tgt.vy, tgt.vz])
+    bistatic_doppler = bistatic_vel / (sc.speed_of_light/(tx.freq * 1000000)) 
+    
+    return bistatic_doppler[0]
+
+
 def calculate_bistatic_doppler(rx, tgt, tx):
     """ calculates bistatic Doppler in Hz
         for given Tx, Rx and Target
@@ -152,15 +188,17 @@ def calculate_bistatic_doppler(rx, tgt, tx):
     )
     
     # asuuming that the target will travel with the current velocity vector for the below time window
-    time_diff = 0.0001 # [s]
+    time_diff = 0.000001 # [s] # smaller differences in Doppler will be computed when using e.g. time_diss = 1s; 14.698740657943263  Vs 14.761600314371947
+    
 
     # tgt.vx is the vel [m/s] along lon axis
     # tgt.vy is the vel [m/s] along lat axis
-    # tgt.vz is vel [m/a] along z axis
+    # tgt.vz is vel [m/s] along z axis
     # see also methods: create_target_replay_track and update_target_track in sensorController module
     
-    tgt_total_vel = tgt.velocity * 1000/3600 # [m/s]
+    tgt_total_vel = tgt.velocity * 1000/3600 # [m/s] 
     tgt_xy_vel = math.sqrt(tgt_total_vel*tgt_total_vel - tgt.vz*tgt.vz) # [m/s]
+    #tgt_xy_vel = math.sqrt(tgt.vx*tgt.vx + tgt.vy*tgt.vy)
     alpha = math.degrees(math.atan2(tgt.vx, tgt.vy))
     if alpha < 0:
         alpha = 360 + alpha # now alpha is on degrees from north
@@ -171,6 +209,8 @@ def calculate_bistatic_doppler(rx, tgt, tx):
     new_lon = new_lat_lon.longitude # this is the predicted target_position lon with the given vel
     new_z = tgt.height + time_diff * tgt.vz
     
+    #print("new lat/lon: ", new_lat, ", ", new_lon, ", new_z: ", new_z)
+
     # now compute bistatic range components R_T and R_R for the new target position
     
     rr2 = (
@@ -186,6 +226,9 @@ def calculate_bistatic_doppler(rx, tgt, tx):
         * 1000.0
     )   
 
+    
+
+
     # compute the rate of change for R_T (tx to target range) and R_R (tgt to rx range)
     
     rt_rate_of_change = (rt2-rt1)/time_diff
@@ -194,10 +237,49 @@ def calculate_bistatic_doppler(rx, tgt, tx):
     wavelength = sc.speed_of_light / (tx.freq * 1000000 ) # FM: 2.78 to 3.41 meters
     doppler_shift = (rt_rate_of_change + rr_rate_of_change) / wavelength  # [Hz]
 
-
-    #print("rt2-rt1 : ", rt2 - rt1, ", rr2 - rr1: ", rr2-rr1, ", doppler = ", doppler_shift)
+    
     return doppler_shift
 
+
+def calculate_std_devs_for_bistatic_detection(rx_pos, tx_pos, tgt_pos, snr_db, tx_freq_hz, tx_bw_hz, t_obs_s):
+    
+    """ 
+    calculates range and vel std deviations of bistatic range and velocity calculations
+    input rx_pos: rx position
+    input tx_pos: tx position
+    input tgt_pos: target position
+    input snr_db: SNR of detection
+    input tx_frq_hz: Tx freq [Hz]
+    tx_bw_hz: signal bandwidth [Hz]
+    t_obs_s: coherent integration time [s]
+        
+    returns:
+    sigma_rho : standard deviation of bistatic range
+    sigma_v: standard deviation of bistatic radial velocity
+    """
+    snr = 10**(snr_db/10)
+    beta = bistatic_angle(rx_pos, tx_pos, tgt_pos)
+    beta_rms = 0.3 * tx_bw_hz
+
+    sigma_tau = 1 / (2*np.pi*beta_rms*np.sqrt(2*snr))
+    sigma_rho = sc.c * sigma_tau
+
+    sigma_f = 1 / (2*np.pi*t_obs_s*np.sqrt(2*snr))
+    lam = sc.c / tx_freq_hz
+    sigma_v = (lam / (2*np.cos(0.5*beta))) * sigma_f
+
+    return (sigma_rho, sigma_v)
+
+
+
+def bistatic_angle(rx_pos, tx_pos, tgt_pos):
+    """
+    calculates bistatic_angle [rad] given rx, tx and tgt positions
+    """
+    rx_vec = np.array(rx_pos) - np.array(tgt_pos)
+    tx_vec = np.array(tx_pos) - np.array(tgt_pos)
+    cosb = np.dot(rx_vec, tx_vec) / (np.linalg.norm(rx_vec) * np.linalg.norm(tx_vec))
+    return np.arccos(cosb)
 
 def monostatic_doppler(
     freq, rad_lat, rad_lon, rad_alt, tgt_lat, tgt_lon, tgt_alt, tgt_vx, tgt_vy, tgt_vz
@@ -255,7 +337,9 @@ def get_clear_sky_attenuation(transmitter_freq):
 
 def get_ecef_cartesian_from_lat_lon_height(lat_deg, lon_deg, h):
     """
-    WGS84 to cooordinates  
+    see standard conversion using pyproj function: convert_geodetic_to_cartesian
+    Author: Sacha Schär
+    WGS84 to ECEF cooordinates  
     returns cartesian coordinates given lat, lon and height using ecef cartesian transformation
     h: height in meters
     """
@@ -282,13 +366,41 @@ def get_ecef_cartesian_from_lat_lon_height(lat_deg, lon_deg, h):
 
     return([x,y,z])
 
+
+def convert_cartesian_to_geodetic(x, y, z):
+    """ 
+    Function to convert Cartesian coordinates to Geodetic
+    """
+    # Define the coordinate systems
+    ecef = pyproj.Proj(proj='geocent', ellps='WGS84', datum='WGS84')
+    lla = pyproj.Proj(proj='latlong', ellps='WGS84', datum='WGS84')
+    # Perform the coordinate transformation
+    t=pyproj.Transformer.from_proj(ecef, lla) 
+    lat, lon, h = t.transform(x, y, z, radians=False)
+    return ([lat, lon, h])
+
+def convert_geodetic_to_cartesian(lat, lon, alt):
+    """
+     convert from Geodetic coordinates to Cartesian coordinates
+    """
+    # Define the coordinate systems
+    ecef = pyproj.Proj(proj='geocent', ellps='WGS84', datum='WGS84')
+    lla = pyproj.Proj(proj='latlong', ellps='WGS84', datum='WGS84')
+
+    t=pyproj.Transformer.from_proj(lla, ecef) 
+    x,y,z = t.transform(lon, lat, alt, radians=False) # the parameter sequence should be lon, lat, alt!
+
+    return ([x,y,z])
+
 def get_2d_distance_between_locs_heights_ecef(lat1, lon1, h1, lat2, lon2, h2):
     """
     returns distance in kilometers between two lat lons and heights using ecef cartesian transformation
     h1, h2: meters
     """
-    p1 = get_ecef_cartesian_from_lat_lon_height(lat1, lon1, h1)
-    p2 = get_ecef_cartesian_from_lat_lon_height(lat2, lon2, h2)
+    #p1 = get_ecef_cartesian_from_lat_lon_height(lat1, lon1, h1)
+    p1 = convert_geodetic_to_cartesian(lat1, lon1, h1)
+    #p2 = get_ecef_cartesian_from_lat_lon_height(lat2, lon2, h2)
+    p2 = convert_geodetic_to_cartesian(lat2, lon2, h2)
     dist = np.linalg.norm(np.array(p1)-np.array(p2))
     return dist/1000.0 # [km]
 
@@ -333,7 +445,12 @@ def get_dest_loc_from_dist_and_angle(theta, dist):
 
 
 def burstvincentydistance(pnt, dist_km, brng):
-    """! returns the destination [lat/lon] point at distance dist_km[km] and at bearing brng[deg] from point pnt[lat/lon]"""
+    """
+    ! returns the destination [lat/lon] point at distance dist_km[km] and at bearing brng[deg] from point pnt[lat/lon];
+    default uses the geodesic distance; but also the great-circle distance can be used,
+    see: https://geopy.readthedocs.io/en/stable/
+    
+    """
     d = geopy.distance.distance(kilometers=dist_km)
     dest = d.destination(point=pnt, bearing=brng)
     return dest

@@ -1,7 +1,7 @@
 """This module defines project-level constants for using PCL"""
 import os
 
-PCL_PLOT_LIFETIME = int(os.environ.get("PCL_PLOT_LIFETIME", 2)) # [s] a pcl plot lives for max this much time if not updated
+PCL_PLOT_LIFETIME = int(os.environ.get("PCL_PLOT_LIFETIME", 0.5)) # [s] a pcl plot lives for max this much time if not updated
 
 MAX_TGT_RX_RANGE = int(os.environ.get("MAX_TGT_RX_RANGE", 180)) # [km] , max range considered between target and Rx for detection
 MAX_TGT_TX_RANGE = int(os.environ.get("MAX_TGT_TX_RANGE", 180)) # [km] , max range considered between target and Tx for detection
@@ -21,3 +21,6 @@ MIN_BISTATIC_RCS_ONLINE_DETECTION = float(os.environ.get("MIN_BISTATIC_RCS_ONLIN
 
 # set to TRUE to use Cartesian bistatic_range computation (if false the haversine function is used)
 _USE_CARTESIAN = bool(os.environ.get("_USE_CARTESIAN", 1))
+
+# detection error model parameters
+_ERROR_MODEL_ON = bool(os.environ.get("_ERROR_MODEL_ON", 1))

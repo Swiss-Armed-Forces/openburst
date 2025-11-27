@@ -81,15 +81,27 @@ def update_target_track(tgt_lat, tgt_lon, tgt_alt, tgt_ms_after_midnight, vlc, s
         elev_angle = np.arctan2(delta_z, delta_wayp_xy)
         vlc_z = vlc * np.sin(elev_angle)
         vlc_xy = vlc * np.cos(elev_angle)
-        
+    
+    # new cvx, vy, vz computations
+    vy = np.cos(new_heading * np.pi / 180.0 ) * vlc_xy 
+    vx = np.sin(new_heading * np.pi / 180.0 ) * vlc_xy
+    vz = vlc_z
+    #vxy_n = math.sqrt(vx_n*vx_n + vy_n*vy_n)
+
+
     new_lat_lon = geofunctions.burstvincentydistance((tgt_lat, tgt_lon), (vlc_xy*sampling_time)/1000, new_heading)
     tgt_new_alt = tgt_alt + vlc_z * sampling_time
 
-    vx = geofunctions.get_2d_distance_between_locs(tgt_lat, new_lat_lon.longitude, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lon axis
-    vy = geofunctions.get_2d_distance_between_locs(new_lat_lon.latitude,  tgt_lon, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lat axis 
-    vz = (tgt_new_alt - tgt_alt) / sampling_time # vlc_z # [m/s] on z axis
-    
+    # original vx, vy, vz computations
+    #vx = geofunctions.get_2d_distance_between_locs(tgt_lat, new_lat_lon.longitude, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lon axis
+    #vy = geofunctions.get_2d_distance_between_locs(new_lat_lon.latitude,  tgt_lon, tgt_lat, tgt_lon) * 1000.0  / sampling_time # [m/s] on lat axis 
+    #vz = (tgt_new_alt - tgt_alt) / sampling_time # vlc_z # [m/s] on z axis
 
+    #vxy = math.sqrt(vx*vx + vy*vy)
+    #print("vlc_z : ", vlc_z , ", vz: ", vz, ", vxy : ", vxy, ", vlc_xy = ", vlc_xy)
+    #print("vx/vy: ", vx, vy , "vx_n/vy_n: ", vx_n, vy_n)
+    #print("vxy / vxy_n: ", vxy, vxy_n)
+    
     if (new_lat_lon.latitude < tgt_lat):
         vy = -1 * abs(vy)
     if (new_lat_lon.longitude < tgt_lon):
@@ -125,7 +137,7 @@ def create_target_replay_track(target, waypoint_dct):
     tgt_track_arr = [datetime_ind, 0, tgt_id, tgt_lat, tgt_lon, 0, speed, tgt_alt, track_quality, ms_after_midnight, tgt_vlx, tgt_vly, tgt_vlz]
     
     sampling_time = replayconstants.NEW_TARGET_SAMPLING_TIME # [s] 
-    tgt_vx = 0 
+    tgt_vx = 0
     tgt_vy = 0 
     tgt_vz = 0
 
@@ -138,13 +150,16 @@ def create_target_replay_track(target, waypoint_dct):
             wayp_alt = float(loc['flightHeight'])
             dist_to_wayp = 10000 # [km]
             max_dist_per_sample = 200* speed * sampling_time/3600.0 # [km]  # we change waypoint before reaching the waypoint, to have smoothe curves
-            #print(":::::::::::: max_dist_per_sample [km] = ", max_dist_per_sample, ", dist_to_wayp [km]: ", dist_to_wayp )
+            print(":::::::::::: max_dist_per_sample [km] = ", max_dist_per_sample, ", dist_to_wayp [km]: ", dist_to_wayp )
             
             
 
             while (dist_to_wayp > (max_dist_per_sample)): # [km]
                 dist_to_wayp = geofunctions.get_2d_distance_between_locs_heights(tgt_lat, tgt_lon, tgt_alt, wayp_lat, wayp_lon, wayp_alt) # [km]
                 intended_heading = geofunctions.calculate_initial_compass_bearing((tgt_lat, tgt_lon), (wayp_lat, wayp_lon))
+                #tgt_vx = target["vx"]
+                #tgt_vy = target["vy"]
+                #tgt_vz = target["vz"]
                 [tgt_new_alt, new_lat_lon, heading, new_ms_after_mid, tgt_vx, tgt_vy, tgt_vz] = update_target_track(tgt_lat, tgt_lon, tgt_alt, ms_after_midnight, vlc, sampling_time, wayp_lat, wayp_lon, wayp_alt, tgt_vx, tgt_vy, tgt_vz, intended_heading)
                 
                 tgt_lat = new_lat_lon[0]

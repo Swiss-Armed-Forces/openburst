@@ -17,27 +17,15 @@
     in the pcl_detection table during the simulation. 
 
 """
-import math
+
 import select
 import json
 import sqlite3
 import psycopg2
-# import matplotlib.pyplot as plt
+
 from openburst.functions import dbfunctions
 
-# plt.ion()
-
-# fig = plt.figure()
-# ax = fig.add_subplot(111)
-# ax.plot([], [], lw=2)
-# ax.set_ylim(-100, 100) # doppler [Hz]
-# ax.set_xlim(0, 100) # range [km]
-# plt.xlabel('bistatic range [km]') 
-# plt.ylabel('bistatic Doppler shift [Hz]') 
-# ax.grid()
-# range_data, doppler_data = [], []
-# line1, = ax.plot(range_data, doppler_data, 'r.')
-# plt.show()
+plot_id = 0 # pcl plot table has no id, so we have on here
 
 def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     """
@@ -48,6 +36,7 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     payload = json.loads(pcl_det_payload)
     rx_id = payload.get("data").get("rx_id")
     tx_id = payload.get("data").get("tx_id")
+    targ_id = payload.get("data").get("targ_id")
     bi_range = payload.get("data").get("range") * 1000 # bistatic range in [m] (see pcldetectionrunner.py)
     bistatic_doppler = payload.get("data").get("doppler") # [dB]
     #det_time = payload.get("data").get("det_time") # [milliseconds since the UNIX epoch January 1, 1970 00:00:00 UTC)
@@ -57,60 +46,18 @@ def pcl_det_to_sqlite(pcl_det_payload, sqcur, sqcon, plotid):
     #bi_range = payload.get("data").get("range")
     snr = payload.get("data").get("snr") # [db] 
     bistatic_velocity = payload.get("data").get("bistatic_velocity") # [m/s]
-    query = """INSERT INTO pcl_plot VALUES (?,?,?,?,?,?,?,?,?,?)"""
-    dat = ([bi_range, bistatic_doppler, bistatic_velocity, snr, 0, 0, plotid, rx_id, tx_id, det_time])
+
+    range_std_dev = payload.get("data").get("std_dev_bist_range") # std deviation of bistatic range
+    vel_std_dev = payload.get("data").get("std_dev_bist_vel") # std deviation of bistatic vel
+
+    query = """INSERT INTO plot VALUES (?,?,?,?,?,?,?,?,?)"""
+    # needed: id INTEGER, range REAL, velocity REAL, SNR REAL, rangeStd REAL, velocityStd REAL, rxId INTEGER, txId INTEGER, timestamp INTEGER NOT NULL, 
+    dat = ([plot_id, bi_range, bistatic_velocity, snr, range_std_dev, vel_std_dev, rx_id, tx_id, det_time])
     #print("sqllite_pcl_analytics pcl_dat: ", dat)
     sqcur.execute(query, dat)
     sqcon.commit()
     print(dat)
-    # write target ground truth
-    ###
-    # target_id = payload.get("data").get("targ_id") # target_id
-
-    # first check if this target and this det_time (target_time) already exists
-    # write_ok = True
-    # sqcur.execute(
-    #         """SELECT * FROM target WHERE targetid=? and timestamp=?""",
-    #         (
-    #             target_id,
-    #             det_time,
-    #         ),
-    #     )         
-    # if sqcur.fetchone() is not None:  # target_id with timestamp exists
-    #         write_ok = False
-    
-    # if (write_ok): # write only if this target position for this timestamp was not already written by other sensor detections
-    #     target_lat = payload.get("data").get("tgt_lat") # target_lat
-    #     target_lon = payload.get("data").get("tgt_lon") # target_lon
-    #     target_height = payload.get("data").get("tgt_height") # target_height
-    
-    #     target_vx = payload.get("data").get("vx") # target_vx [m/s]
-    #     target_vy = payload.get("data").get("vy") # target_vy [m/s]
-    #     target_vz = payload.get("data").get("vz") # target_vz [m/s]
-    #     target_speed = math.sqrt(target_vx * target_vx + target_vy * target_vy + target_vz * target_vz) # [m/s]
-
-    #     alpha = math.degrees(math.atan2(target_vx, target_vy))
-    #     if alpha < 0:
-    #         alpha = 360 + alpha # now alpha is on degrees from north
-
-    #     query = """INSERT INTO target VALUES (?,?,?,?,?,?,?)"""
-    #     dat = ([target_id, det_time,target_lat, target_lon, target_height, alpha, target_speed])
-    #     #print("targ dat: ", dat)
-    #     sqcur.execute(query, dat)
-    #     sqcon.commit()
-
-    # global range_data
-    # range_data.append(bi_range)
-    # global doppler_data
-    # doppler_data.append(bistatic_doppler)
-    # global line1
-    # line1.set_ydata(doppler_data)
-    # line1.set_xdata(range_data)
-    # global fig
-    # fig.canvas.draw()
-    # fig.canvas.flush_events()
-
-    
+   
 
 if __name__ == "__main__":
     ## start a sqlite db
@@ -118,56 +65,51 @@ if __name__ == "__main__":
     sqlite_cur = sqlite_con.cursor()
 
     ## create a pcl plots table
-    plot = """ CREATE TABLE IF NOT EXISTS pcl_plot (
-            bistatic_range REAL NOT NULL,
-            bistatic_doppler REAL NOT NULL,
-            bistatic_velocity REAL NOT NULL,
+
+    plots_table = """
+        CREATE TABLE IF NOT EXISTS plot (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+            range REAL NOT NULL,       
+            velocity REAL NOT NULL,
             SNR REAL,
-            rangeSTD REAL,
-            velocitySTD REAL,
-            plotid INTEGER,
-            rxid INTEGER,
-            txid INTEGER,
-            timestamp INTEGER NOT NULL
-        ); """
-    sqlite_cur.execute(plot)
+            rangeStd REAL,
+            velocityStd REAL,
+            rxId INTEGER,
+            txId INTEGER,
+            timestamp INTEGER NOT NULL,
+            FOREIGN KEY(rxId) REFERENCES receiver(id)
+            FOREIGN KEY(txId) REFERENCES transmitter(id)
+        );"""
 
-    ## create a targets table (ground truth)
-    # target = """ CREATE TABLE IF NOT EXISTS target (
-    #         targetid INTEGER NOT NULL,
-    #         timestamp INTEGER NOT NULL,
-    #         latitude REAL NOT NULL,
-    #         longitude REAL NOT NULL,
-    #         height REAL NOT NULL,
-    #         heading REAL NOT NULL,
-    #         speed REAL NOT NULL
-    #     ); """
-    # sqlite_cur.execute(target)
+   
+    sqlite_cur.execute(plots_table)
 
-    ## create a transmitter table
-    transmitter = """ CREATE TABLE IF NOT EXISTS transmitter (
-            latitude REAL NOT NULL,
+    transmitter_table = """
+        CREATE TABLE IF NOT EXISTS transmitter (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
             longitude REAL NOT NULL,
-            height REAL NOT NULL,
+            latitude REAL NOT NULL,
+            altitude REAL NOT NULL,
             frequency REAL NOT NULL,
             bandwidth REAL NOT NULL,
-            type character varying(50) NOT NULL,	
-            name character varying(50) NOT NULL,	
-            txId INTEGER NOT NULL
-        ); """
-    sqlite_cur.execute(transmitter)
+            type TEXT NOT NULL,
+            name TEXT NOT NULL
+        );"""
+  
+    sqlite_cur.execute(transmitter_table)
 
     ## create a receiver table
-    receiver = """ CREATE TABLE IF NOT EXISTS receiver (
-            latitude REAL NOT NULL,
+    receiver_table = """
+        CREATE TABLE IF NOT EXISTS receiver (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
             longitude REAL NOT NULL,
-            height REAL NOT NULL,	
-            name character varying(50) NOT NULL,	
-            rxId INTEGER NOT NULL,
+            latitude REAL NOT NULL,
+            altitude REAL NOT NULL,	
+            name TEXT NOT NULL,	
             direction REAL NOT NULL,
-            bandwidth REAL NOT NULL
-        ); """
-    sqlite_cur.execute(receiver)
+            beamwidth REAL NOT NULL
+        );"""
+    sqlite_cur.execute(receiver_table)
 
     # now listen on openburst pcl detections table and write detections and targets 
     conn = dbfunctions.connect_to_db()
@@ -177,25 +119,32 @@ if __name__ == "__main__":
     # read from postgresql and write to sqlite all transmitters
     curs.execute("SELECT * FROM blue_live.pcl_tx")
     for tx in curs.fetchall():
-        sql = """INSERT INTO transmitter VALUES (?,?,?,?,?,?,?,?)"""
+        print("tx = ", tx)
+        sql = """INSERT OR REPLACE INTO transmitter VALUES (?,?,?,?,?,?,?,?)"""
         # postgresql table: 0: tx_id, 1: callsign, 2: sitename, 3: team, 4: lat, 5: lon, 6: status, 7: masl, 8: ahmagl, 9: signal_type, 10: freq, 11: erp_h, 12: erp_v, 13: bandwidth, 14: horz_att, 15: vert_att, 16: pol
-        # needed: lat, lon, height, frequency, bandwidth, type, name, txid
-        data = ([tx[4], tx[5], tx[7]+tx[8], tx[10], tx[13], tx[9], tx[1], tx[0]])
+        # needed: id, lon, lat, alt, freq, bw, type, name  
+        data = ([tx[0], tx[5], tx[4], tx[7]+tx[8], tx[10], tx[13], tx[9], tx[1]])
+        #print("tx_data = ", data)
         sqlite_cur.execute(sql, data)
         sqlite_con.commit()
 
     # read from postgresql and write to sqlite all receivers
     curs.execute("SELECT * FROM blue_live.pcl_rx")
     for rx in curs.fetchall():
-        sql = """INSERT INTO receiver VALUES (?,?,?,?,?,?,?)"""
-        data = ([rx[3], rx[4], rx[6]+rx[7], rx[1], rx[0], 0, rx[9]])
+        sql = """INSERT OR REPLACE INTO receiver VALUES (?,?,?,?,?,?,?)"""
+        # postgresql table: 0:rx_id, 1: name, 2: team, 3: lat, 4: lon, 5: status, 6: masl, 7: ahmagl
+        # 8: signal_type, 9: bw, 10: h_atten, 11: v_atten, 12: gain, 13: losses, 14: temp_sys, 15: limit_dist
+        # 16: update_time, 17: tx_callsigns
+        # needed: id, lon, lat, alt, name, direction, beamwidth
+
+        data = ([rx[0], rx[4], rx[3], rx[6]+rx[7], rx[1],  0, rx[9]]) # we are using bandwidth (and not beamwidth)
         sqlite_cur.execute(sql, data)
         sqlite_con.commit()  
 
     listen_query = "LISTEN " + "blue_live_pcl_detection" + ";"
     curs.execute(listen_query)
     conn.commit()
-    plot_id = 0
+    
 
     try:
         while True:
@@ -224,14 +173,9 @@ if __name__ == "__main__":
         print("-------------------------- printing and plotting all PCL detections in sqlite DB------------ ")
         con = sqlite3.connect("passive_data.db")
         cur = con.cursor()
-        res = cur.execute("SELECT * FROM pcl_plot")
+        res = cur.execute("SELECT * FROM plot")
         for row in res:
             print(row)
-
-        # print("-------------------------- printing and plotting all targets sqlite DB------------ ")
-        # res = cur.execute("SELECT * FROM target")
-        # for row in res:
-        #     print(row)
 
         print("-------------------------- printing and plotting all receivers sqlite DB------------ ")
         res = cur.execute("SELECT * FROM receiver")
