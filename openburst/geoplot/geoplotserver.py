@@ -251,15 +251,32 @@ def get_rad_coverage_kml_above_rad(Z, queue, rad_id, flight_height, rcs, request
     ZZ = np.array(Z)
     ZZ[:,0] = Z[:,1]
     ZZ[:,1] = Z[:,0]
-    ZZ_out = ZZ[np.where(ZZ[:,2] == 1.0)]
-    ZZ_in = ZZ[np.where(ZZ[:,2] == 0.0)]
-    mytuple_out = tuple(ZZ_out[:,0:2])
-    mytuple_in = tuple(ZZ_in[:,0:2])
+    ZZ_out = ZZ[np.where(np.isclose(ZZ[:,2], 1.0))]
+    ZZ_in = ZZ[np.where(np.isclose(ZZ[:,2], 0.0))]
 
     inner_bounds = []
-    for i in range(0,ZZ_in.shape[0]):
-        inner_bounds.append((ZZ_in[i,0], ZZ_in[i,1], flight_height))
-    pol = kml.newpolygon(name=polyname, outerboundaryis=mytuple_out, innerboundaryis=inner_bounds)
+    for i in range(0, ZZ_in.shape[0]):
+        inner_bounds.append((float(ZZ_in[i, 0]), float(ZZ_in[i, 1]), float(flight_height)))
+    if not np.equal(inner_bounds[0], inner_bounds[-1]).all():
+        inner_bounds.append(inner_bounds[0])
+        logging.getLogger("GEO").debug("Correct inner_bounds")
+        logging.getLogger("GEO").debug(inner_bounds[0])
+        logging.getLogger("GEO").debug(inner_bounds[-1])
+    else:
+        logging.getLogger("GEO").debug("No correction for inner_bounds")
+
+    outer_bounds = []
+    for i in range(0, ZZ_out.shape[0]):
+        outer_bounds.append((float(ZZ_out[i, 0]), float(ZZ_out[i, 1]), float(flight_height)))
+    if not np.equal(outer_bounds[0], outer_bounds[-1]).all():
+        outer_bounds.append(outer_bounds[0])
+        logging.getLogger("GEO").debug("Correct outer_bounds")
+        logging.getLogger("GEO").debug(outer_bounds[0])
+        logging.getLogger("GEO").debug(outer_bounds[-1])
+    else:
+        logging.getLogger("GEO").debug("No correction for outer_bounds")
+    
+    pol = kml.newpolygon(name=polyname, outerboundaryis=outer_bounds, innerboundaryis=inner_bounds)
 
     file_name = "/tmp/" + str(rad_id) + "_" + str(flight_height) + "mASL_RCS1"  + ".kml"
     logging.getLogger("GEO").debug("saving kml file as: %s", file_name)
@@ -305,6 +322,7 @@ def get_kml_object_simple(gridparams, Z, flight_height):
     kml_name = "PCL@" + "masl:" + str(flight_height)
     # now get all the polygons in the contourf plot and make a kml file from them
     nofpolys = 0
+    # TODO: QuadContourSet.collections property was deprecated in matplotlib v3.8.
     for collection in contour.collections:
         for path in collection.get_paths():
             path.should_simplify = False
