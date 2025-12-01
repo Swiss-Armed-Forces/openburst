@@ -168,42 +168,56 @@
 #define FOUR_THIRDS 1.3333333333333
 
 
+class BurstVariables {
+	public:
+	static int nof_loaded_pages;
+	static char string[255];
+	static char sdf_path[255];
+	static char opened;
+	static char gpsav;
+	static char splat_name[10];
+	static char splat_version[6];
+	static char dashes[80];
+	static char olditm;
+	static double earthradius;
+	static double max_range;
+	static double forced_erp;
+	static double fzone_clearance;
+	static double clutter;
+	static int min_north;
+	static int max_north;
+	static int min_west;
+	static int max_west;
+	static int min_elevation;
+	static int max_elevation;
+	static bool got_elevation_pattern;
+	static bool got_azimuth_pattern;
+};
 
-int nof_loaded_pages = 0;
-
-char 	string[255], sdf_path[255], opened=0, gpsav=0, splat_name[10],
-	splat_version[6], dashes[80], olditm;
-
-double	earthradius, max_range=0.0, forced_erp=-1.0, dpp, ppd,
-	fzone_clearance=0.6, forced_freq, clutter;
-
-int	min_north=90, max_north=-90, min_west=360, max_west=-1, ippd, mpi,
-	max_elevation=-32768, min_elevation=32768, bzerror, contour_threshold;
-
-unsigned char got_elevation_pattern, got_azimuth_pattern, metric=0, dbm=0, smooth_contours=0;
-
-struct site {	double lat;
-		double lon;
-		float alt;
-		char name[50];
-		char filename[255];
-	    } 	site;
+struct site {
+	double lat;
+	double lon;
+	float alt;
+	char name[50];
+	char filename[255];
+};
 
 
-struct path {	double lat[ARRAYSIZE];
-		double lon[ARRAYSIZE];
-		double elevation[ARRAYSIZE];
-		double distance[ARRAYSIZE];
-		int length;
-	    }	path;
+struct path {
+	double lat[ARRAYSIZE];
+	double lon[ARRAYSIZE];
+	double elevation[ARRAYSIZE];
+	double distance[ARRAYSIZE];
+	int length;
+} path;
 
 struct pathBurst {
-        double* lat;
-		double* lon;
-		double* elevation;
-		double* distance;
-		int length;
-	    };
+	double* lat;
+	double* lon;
+	double* elevation;
+	double* distance;
+	int length;
+};
 
 struct dem {	int min_north; // in shared mem for parallelization
 		int max_north; // in shared mem for parallelization

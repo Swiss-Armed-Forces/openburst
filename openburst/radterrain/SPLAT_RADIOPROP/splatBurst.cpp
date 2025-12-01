@@ -23,6 +23,38 @@
 
 #include "splatBurst.h"
 
+int BurstVariables::nof_loaded_pages = 0;
+char BurstVariables::string[255];
+char BurstVariables::sdf_path[255];
+char BurstVariables::opened = 0;
+char BurstVariables::gpsav = 0;
+char BurstVariables::splat_name[10];
+char BurstVariables::splat_version[6];
+char BurstVariables::dashes[80];
+char BurstVariables::olditm = 0;
+double BurstVariables::earthradius = EARTHRADIUS * 1.333; // this is done in the original splat.cpp upon input -m 1.333. we want to consider this always as we are using splat mainly for radar coverage computations;
+double BurstVariables::max_range = 0.0;
+double BurstVariables::forced_erp = -1.0;
+double BurstVariables::fzone_clearance = 0.6;
+double BurstVariables::clutter;
+int BurstVariables::min_north = 90;
+int BurstVariables::max_north = -90;
+int BurstVariables::min_west = 360;
+int BurstVariables::max_west = -1;
+int BurstVariables::min_elevation = 32768;
+int BurstVariables::max_elevation = -32768;
+bool BurstVariables::got_elevation_pattern = false;
+bool BurstVariables::got_azimuth_pattern = false;
+
+constexpr double ippd = IPPD;			// pixels per degree (integer)
+constexpr double ppd = (double)ippd;	// pixels per degree (double)
+constexpr double dpp = 1.0 / ppd;		// degrees per pixel
+constexpr double forced_freq = 0.0;
+constexpr int mpi = ippd - 1;				// maximum pixel index per degree
+constexpr bool metric = false;
+constexpr bool dbm = false;
+
+
 
 std::vector<float> GetLosAndLossReturn::readLosMatrix(){
   return this->los;
@@ -54,12 +86,6 @@ void prop_site::initialize_light( float diel_const, float earth_cond, float at_b
     this->frac_of_time=frac_of_time;
     this->ground_clutter=ground_clutter;
     this->oitm = 1;// propagation model: 0 = IT_WOM, 1= longley_rice
- 
-    ippd=IPPD;		/* pixels per degree (integer) */
-    ppd=(double)ippd;	/* pixels per degree (double)  */
-    dpp=1.0/ppd;		/* degrees per pixel */
-    mpi=ippd-1;		/* maximum pixel index per degree */
-
         
     // for reading shared mem DEM attributes in GetElevation 
     attrs_region_p_site = bi::mapped_region{shm_attrs_read, bi::read_only};;
@@ -83,17 +109,6 @@ void prop_site::initialize_heavy(int min_lat, int max_lat, int min_lon, int max_
     this->frac_of_time=frac_of_time;
     this->ground_clutter=ground_clutter;
     this->oitm = 1;// propagation model: 0 = IT_WOM, 1= longley_rice
-
-    
- 
-    ippd=IPPD;		/* pixels per degree (integer) */
-    ppd=(double)ippd;	/* pixels per degree (double)  */
-    dpp=1.0/ppd;		/* degrees per pixel */
-    mpi=ippd-1;		/* maximum pixel index per degree */
-
-
-    
-
     
     for (int x=0; x<MAXPAGES; x++)
       {
@@ -106,7 +121,7 @@ void prop_site::initialize_heavy(int min_lat, int max_lat, int min_lon, int max_
 
       }
 
-    strncpy(sdf_path, burst_dem_path, 253);
+    strncpy(BurstVariables::sdf_path, burst_dem_path, 253);
     
     
    
@@ -309,41 +324,25 @@ std::vector<float> prop_site::getLosAndLoss(float tx_lat, float tx_lon, float tx
     
     
     
-    olditm= oitm;
+    BurstVariables::olditm= oitm;
     kml=0;
     geo=0;
-    dbm=0;
-    gpsav=0;
-    metric=0;
+    BurstVariables::gpsav=0;
     rxfile[0]=0;
     txfile[0]=0;
     string[0]=0;
     mapfile[0]=0;
-    clutter=ground_clutter;
-    forced_erp=-1.0;
-    forced_freq=0.0;
+    BurstVariables::clutter=ground_clutter;
     elevation_file[0]=0;
     terrain_file[0]=0;
-    sdf_path[0]=0;
+    BurstVariables::sdf_path[0]=0;
     udt_file[0]=0;
-    path.length=0;
     max_txsites=30;
-    fzone_clearance=0.6;
-    contour_threshold=0;
     rx_site.lat=91.0;
     rx_site.lon=361.0;
     longley_file[0]=0;
     ano_filename[0]=0;
     ani_filename[0]=0;
-    smooth_contours=0;
-    earthradius=EARTHRADIUS*1.333; // this is done in the original splat.cpp upon input -m 1.333. we want to consider this always as we are using splat mainly for radar coverage computations
-    
-    ippd=IPPD;		/* pixels per degree (integer) */
-    ppd=(double)ippd;	/* pixels per degree (double)  */
-    dpp=1.0/ppd;	/* degrees per pixel */
-    mpi=ippd-1;		/* maximum pixel index per degree */
-    
-    
   
     tx_site.lat= tx_lat;
     tx_site.lon= tx_lon;
@@ -994,9 +993,9 @@ char *dec2dms(double decimal)
 	if (seconds>59)
 		seconds=59;
 
-	string[0]=0;
-	snprintf(string,250,"%d%c %d\' %d\"", degrees*sign, 176, minutes, seconds);
-	return (string);
+	BurstVariables::string[0]=0;
+	snprintf(BurstVariables::string,250,"%d%c %d\' %d\"", degrees*sign, 176, minutes, seconds);
+	return (BurstVariables::string);
 }
 
 int PutMask(double lat, double lon, int value)
@@ -1279,14 +1278,14 @@ float Distance_including_ELevation(struct site source, struct site destination){
 	    */
   	register double a, b, dx;
 
-	a=GetElevation(destination)+destination.alt+earthradius;
-	b=GetElevation(source)+source.alt+earthradius;
+	a=GetElevation(destination)+destination.alt+BurstVariables::earthradius;
+	b=GetElevation(source)+source.alt+BurstVariables::earthradius;
 
 
  	dx=5280.0*Distance(source,destination); // Distance returns miles. multiply by 5280 to get feet
   
 	// compute earth surface angular change (Sandia Report)//
-	float phi_e = dx/earthradius;
+	float phi_e = dx/BurstVariables::earthradius;
 	
 	// now use law of cosines to find distance between source and destination including elevation
 	float dist_src_dst_meters = METERS_PER_FOOT * sqrt(a*a + b*b - 2 * a * b * cos(phi_e));
@@ -1315,8 +1314,8 @@ double ElevationAngle(struct site source, struct site destination)
 	   
 	register double a, b, dx;
 
-	a=GetElevation(destination)+destination.alt+earthradius;
-	b=GetElevation(source)+source.alt+earthradius;
+	a=GetElevation(destination)+destination.alt+BurstVariables::earthradius;
+	b=GetElevation(source)+source.alt+BurstVariables::earthradius;
 
  	dx=5280.0*Distance(source,destination); // Distance returns miles. multiply by 5280 to get feet
 
@@ -1455,7 +1454,6 @@ void ReadPath(struct site source, struct site destination)
 	   locations along a great circle path, and stores
 	   elevation and distance information for points
 	   along that path in the "path" structure. */
-
 	int	c;
 	double	azimuth, distance, lat1, lon1, beta, den, num,
 		lat2, lon2, total_distance, dx, dy, path_length,
@@ -1608,7 +1606,7 @@ double ElevationAngleTwo(struct site source, struct site destination, double er)
 	{
 		distance=5280.0*currPath.distance[x];
 
-		test_alt=earthradius+(currPath.elevation[x]==0.0?currPath.elevation[x]:currPath.elevation[x]+clutter);
+		test_alt=BurstVariables::earthradius+(currPath.elevation[x]==0.0?currPath.elevation[x]:currPath.elevation[x]+BurstVariables::clutter);
 
 		cos_test_angle=((source_alt2)+(distance*distance)-(test_alt*test_alt))/(2.0*source_alt*distance);
 
@@ -1715,7 +1713,7 @@ double AverageTerrain(struct site source, double azimuthx, double start_distance
 		{
 			if (path.distance[c]>=start_distance)
 			{
-				terrain+=(path.elevation[c]==0.0?path.elevation[c]:path.elevation[c]+clutter);
+				terrain+=(path.elevation[c]==0.0?path.elevation[c]:path.elevation[c]+BurstVariables::clutter);
 				samples++;
 			}
 		}
@@ -1785,10 +1783,10 @@ void PlaceMarker(struct site location)
 	double	x, y, lat, lon, textx=0.0, texty=0.0, xmin, xmax,
 		ymin, ymax, p1, p3, p6, p8, p12, p16, p24, label_length;
 
-	xmin=(double)min_north;
-	xmax=(double)max_north;
-	ymin=(double)min_west;
-	ymax=(double)max_west;
+	xmin=(double)BurstVariables::min_north;
+	xmax=(double)BurstVariables::max_north;
+	ymin=(double)BurstVariables::min_west;
+	ymax=(double)BurstVariables::max_west;
 	lat=location.lat;
 	lon=location.lon;
 
@@ -2174,8 +2172,8 @@ void LoadPAT(char *filename)
 
 	rotation=0.0;
 
-	got_azimuth_pattern=0;
-	got_elevation_pattern=0;
+	BurstVariables::got_azimuth_pattern=false;
+	BurstVariables::got_elevation_pattern=false;
 
 	/* Load .az antenna pattern file */
 
@@ -2311,7 +2309,7 @@ void LoadPAT(char *filename)
 
 		azimuth_pattern[360]=azimuth_pattern[0];
 
-		got_azimuth_pattern=255;
+		BurstVariables::got_azimuth_pattern = true;
 	}
 
 	/* Read and process .el file */
@@ -2485,19 +2483,19 @@ void LoadPAT(char *filename)
 			}
 		}
 
-		got_elevation_pattern=255;
+		BurstVariables::got_elevation_pattern = true;
 	}
 
 	for (x=0; x<=360; x++)
 	{
 		for (y=0; y<=1000; y++)
 		{
-			if (got_elevation_pattern)
+			if (BurstVariables::got_elevation_pattern)
 				elevation=elevation_pattern[x][y];
 			else
 				elevation=1.0;
 
-			if (got_azimuth_pattern)
+			if (BurstVariables::got_azimuth_pattern)
 				az=azimuth_pattern[x];
 			else
 				az=1.0;
@@ -2572,14 +2570,14 @@ int LoadSDF_SDF(char *name)
 
 		fd=fopen(path_plus_name,"rb");
 
-		fprintf(stdout,"-------------------> sdf_path \%s\: ", sdf_path);
+		fprintf(stdout,"-------------------> sdf_path \%s\: ", BurstVariables::sdf_path);
 
 		if (fd==NULL)
 		{
 			/* Next, try loading SDF file from path specified
 			   in $HOME/.splat_path file or by -d argument */
 
-			strncpy(path_plus_name,sdf_path,255);
+			strncpy(path_plus_name,BurstVariables::sdf_path,255);
 			strncat(path_plus_name,sdf_file,254);
 
 			fd=fopen(path_plus_name,"rb");
@@ -2628,57 +2626,57 @@ int LoadSDF_SDF(char *name)
 
 			fclose(fd);
 
-			if (dem[indx].min_el<min_elevation)
-				min_elevation=dem[indx].min_el;
+			if (dem[indx].min_el<BurstVariables::min_elevation)
+				BurstVariables::min_elevation=dem[indx].min_el;
 
-			if (dem[indx].max_el>max_elevation)
-				max_elevation=dem[indx].max_el;
+			if (dem[indx].max_el>BurstVariables::max_elevation)
+				BurstVariables::max_elevation=dem[indx].max_el;
 
-			if (max_north==-90)
-				max_north=dem[indx].max_north;
+			if (BurstVariables::max_north==-90)
+				BurstVariables::max_north=dem[indx].max_north;
 
-			else if (dem[indx].max_north>max_north)
-					max_north=dem[indx].max_north;
+			else if (dem[indx].max_north>BurstVariables::max_north)
+					BurstVariables::max_north=dem[indx].max_north;
 
-			if (min_north==90)
-				min_north=dem[indx].min_north;
+			if (BurstVariables::min_north==90)
+				BurstVariables::min_north=dem[indx].min_north;
 
-			else if (dem[indx].min_north<min_north)
-					min_north=dem[indx].min_north;
+			else if (dem[indx].min_north<BurstVariables::min_north)
+					BurstVariables::min_north=dem[indx].min_north;
 
-			if (max_west==-1)
-				max_west=dem[indx].max_west;
+			if (BurstVariables::max_west==-1)
+				BurstVariables::max_west=dem[indx].max_west;
 
 			else
 			{
-				if (abs(dem[indx].max_west-max_west)<180)
+				if (abs(dem[indx].max_west-BurstVariables::max_west)<180)
 				{
- 					if (dem[indx].max_west>max_west)
-						max_west=dem[indx].max_west;
+ 					if (dem[indx].max_west>BurstVariables::max_west)
+						BurstVariables::max_west=dem[indx].max_west;
 				}
 
 				else
 				{
- 					if (dem[indx].max_west<max_west)
-						max_west=dem[indx].max_west;
+ 					if (dem[indx].max_west<BurstVariables::max_west)
+						BurstVariables::max_west=dem[indx].max_west;
 				}
 			}
 
-			if (min_west==360)
-				min_west=dem[indx].min_west;
+			if (BurstVariables::min_west==360)
+				BurstVariables::min_west=dem[indx].min_west;
 
 			else
 			{
-				if (fabs(dem[indx].min_west-min_west)<180.0)
+				if (fabs(dem[indx].min_west-BurstVariables::min_west)<180.0)
 				{
- 					if (dem[indx].min_west<min_west)
-						min_west=dem[indx].min_west;
+ 					if (dem[indx].min_west<BurstVariables::min_west)
+						BurstVariables::min_west=dem[indx].min_west;
 				}
 
 				else
 				{
- 					if (dem[indx].min_west>min_west)
-						min_west=dem[indx].min_west;
+ 					if (dem[indx].min_west>BurstVariables::min_west)
+						BurstVariables::min_west=dem[indx].min_west;
 				}
 			}
 
@@ -2706,24 +2704,25 @@ char *BZfgets(BZFILE *bzfd, unsigned length)
 	   this function is invoked.  A NULL string indicates an EOF
 	   or error condition. */
 
+	int bzerror = 0;
 	static int x, y, nBuf;
 	static char buffer[BZBUFFER+1], output[BZBUFFER+1];
 	char done=0;
 
-	if (opened!=1 && bzerror==BZ_OK)
+	if (BurstVariables::opened!=1 && bzerror==BZ_OK)
 	{
 		/* First time through.  Initialize everything! */
 
 		x=0;
 		y=0;
 		nBuf=0;
-		opened=1;
+		BurstVariables::opened=1;
 		output[0]=0;
 	}
 
 	do
 	{
-		if (x==nBuf && bzerror!=BZ_STREAM_END && bzerror==BZ_OK && opened)
+		if (x==nBuf && bzerror!=BZ_STREAM_END && bzerror==BZ_OK && BurstVariables::opened)
 		{
 			/* Uncompress data into a static buffer */
 
@@ -2750,7 +2749,7 @@ char *BZfgets(BZFILE *bzfd, unsigned length)
 	} while (done==0);
 
 	if (output[0]==0)
-		opened=0;
+		BurstVariables::opened=0;
 
 	return (output);
 }
@@ -2842,57 +2841,57 @@ char LoadSDF(char *name)
 		
 	      }
 	  
-	  if (dem[indx].min_el<min_elevation) 
-	    min_elevation=dem[indx].min_el;
+	  if (dem[indx].min_el<BurstVariables::min_elevation) 
+	    BurstVariables::min_elevation=dem[indx].min_el;
 	  
-	  if (dem[indx].max_el>max_elevation)
-	    max_elevation=dem[indx].max_el;
+	  if (dem[indx].max_el>BurstVariables::max_elevation)
+	    BurstVariables::max_elevation=dem[indx].max_el;
 	  
-	  if (max_north==-90)
-	    max_north=dem[indx].max_north;
+	  if (BurstVariables::max_north==-90)
+	    BurstVariables::max_north=dem[indx].max_north;
 	  
-	  else if (dem[indx].max_north>max_north)
-	    max_north=dem[indx].max_north;
+	  else if (dem[indx].max_north>BurstVariables::max_north)
+	    BurstVariables::max_north=dem[indx].max_north;
 	  
-	  if (min_north==90)
-	    min_north=dem[indx].min_north;
+	  if (BurstVariables::min_north==90)
+	    BurstVariables::min_north=dem[indx].min_north;
 	  
-	  else if (dem[indx].min_north<min_north)
-	    min_north=dem[indx].min_north;
+	  else if (dem[indx].min_north<BurstVariables::min_north)
+	    BurstVariables::min_north=dem[indx].min_north;
 	  
-	  if (max_west==-1)
-	    max_west=dem[indx].max_west;
+	  if (BurstVariables::max_west==-1)
+	    BurstVariables::max_west=dem[indx].max_west;
 	  
 	  else
 	    {
-	      if (abs(dem[indx].max_west-max_west)<180)
+	      if (abs(dem[indx].max_west-BurstVariables::max_west)<180)
 		{
-		  if (dem[indx].max_west>max_west)
-		    max_west=dem[indx].max_west;
+		  if (dem[indx].max_west>BurstVariables::max_west)
+		    BurstVariables::max_west=dem[indx].max_west;
 		}
 	      
 	      else
 		{
-		  if (dem[indx].max_west<max_west)
-		    max_west=dem[indx].max_west;
+		  if (dem[indx].max_west<BurstVariables::max_west)
+		    BurstVariables::max_west=dem[indx].max_west;
 		}
 	    }
 	  
-	  if (min_west==360)
-	    min_west=dem[indx].min_west;
+	  if (BurstVariables::min_west==360)
+	    BurstVariables::min_west=dem[indx].min_west;
 	  
 	  else
 	    {
-	      if (abs(dem[indx].min_west-min_west)<180)
+	      if (abs(dem[indx].min_west-BurstVariables::min_west)<180)
 		{
-		  if (dem[indx].min_west<min_west)
-		    min_west=dem[indx].min_west;
+		  if (dem[indx].min_west<BurstVariables::min_west)
+		    BurstVariables::min_west=dem[indx].min_west;
 		}
 	      
 	      else
 		{
-		  if (dem[indx].min_west>min_west)
-		    min_west=dem[indx].min_west;
+		  if (dem[indx].min_west>BurstVariables::min_west)
+		    BurstVariables::min_west=dem[indx].min_west;
 		}
 	    }
 	  
@@ -2900,15 +2899,15 @@ char LoadSDF(char *name)
 	}
     }
 
-  if (nof_loaded_pages >= MAXPAGES){ // this is a big error..
+  if (BurstVariables::nof_loaded_pages >= MAXPAGES){ // this is a big error..
     fprintf(stdout , "@@@@@@@@@@@@@@@@@@@@@@@@@@ loaded pages exceeds MAXPAGES= %d; exiting!!!! \n ", MAXPAGES);
     exit (EXIT_FAILURE);
   }
 
 
   if (return_value == 1){
-    nof_loaded_pages = nof_loaded_pages + 1;
-    fprintf(stdout , "returning from LoadSDF, loaded pages = %d \n ", nof_loaded_pages);
+    BurstVariables::nof_loaded_pages = BurstVariables::nof_loaded_pages + 1;
+    fprintf(stdout , "returning from LoadSDF, loaded pages = %d \n ", BurstVariables::nof_loaded_pages);
   }
   return return_value;
 }
@@ -3379,8 +3378,8 @@ char ReadLRParm(struct site txsite, char forced_read)
 
 		fclose(fd);
 
-		if (forced_erp!=-1.0)
-			LR.erp=forced_erp;
+		if (BurstVariables::forced_erp!=-1.0)
+			LR.erp=BurstVariables::forced_erp;
 
 		if (forced_freq>=20.0 && forced_freq<=20000.0)
 			LR.frq_mhz=forced_freq;
@@ -3475,8 +3474,8 @@ void PlotPath(struct site source, struct site destination, char mask_value)
 		if ((GetMask(path.lat[y],path.lon[y])&mask_value)==0)
 		{
 			distance=5280.0*path.distance[y];
-			tx_alt=earthradius+source.alt+path.elevation[0];
-			rx_alt=earthradius+destination.alt+path.elevation[y];
+			tx_alt=BurstVariables::earthradius+source.alt+path.elevation[0];
+			rx_alt=BurstVariables::earthradius+destination.alt+path.elevation[y];
 
 			/* Calculate the cosine of the elevation of the
 			   transmitter as seen at the temp rx point. */
@@ -3486,7 +3485,7 @@ void PlotPath(struct site source, struct site destination, char mask_value)
 			for (x=y, block=0; x>=0 && block==0; x--)
 			{
 				distance=5280.0*(path.distance[y]-path.distance[x]);
-				test_alt=earthradius+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
+				test_alt=BurstVariables::earthradius+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+BurstVariables::clutter);
 
 				cos_test_angle=((rx_alt*rx_alt)+(distance*distance)-(test_alt*test_alt))/(2.0*rx_alt*distance);
 
@@ -3529,7 +3528,7 @@ void PlotLRPath(struct site source, struct site destination, unsigned char mask_
 	/* Copy elevations plus clutter along path into the elev[] array. */
 
 	for (x=1; x<path.length-1; x++)
-		elev[x+2]=(path.elevation[x]==0.0?path.elevation[x]*METERS_PER_FOOT:(clutter+path.elevation[x])*METERS_PER_FOOT);
+		elev[x+2]=(path.elevation[x]==0.0?path.elevation[x]*METERS_PER_FOOT:(BurstVariables::clutter+path.elevation[x])*METERS_PER_FOOT);
 
 	/* Copy ending points without clutter */
 
@@ -3546,7 +3545,7 @@ void PlotLRPath(struct site source, struct site destination, unsigned char mask_
 	   is required for properly integrating the antenna's elevation
 	   pattern into the calculation for overall path loss. */
 
-	for (y=2; (y<(path.length-1) && path.distance[y]<=max_range); y++)
+	for (y=2; (y<(path.length-1) && path.distance[y]<=BurstVariables::max_range); y++)
 	{
 		/* Process this point only if it
 		   has not already been processed. */
@@ -3570,7 +3569,7 @@ void PlotLRPath(struct site source, struct site destination, unsigned char mask_
 			if (cos_rcvr_angle<-1.0)
 				cos_rcvr_angle=-1.0;
 
-			if (got_elevation_pattern || fd!=NULL)
+			if (BurstVariables::got_elevation_pattern || fd!=NULL)
 			{
 				/* Determine the elevation angle to the first obstruction
 				   along the path IF elevation pattern data is available
@@ -3580,7 +3579,7 @@ void PlotLRPath(struct site source, struct site destination, unsigned char mask_
 				{
 					distance=5280.0*path.distance[x];
 
-					test_alt=four_thirds_earth+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
+					test_alt=four_thirds_earth+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+BurstVariables::clutter);
 
 					/* Calculate the cosine of the elevation
 					   angle of the terrain (test point)
@@ -3624,7 +3623,7 @@ void PlotLRPath(struct site source, struct site destination, unsigned char mask_
 
 			elev[1]=METERS_PER_MILE*(path.distance[y]-path.distance[y-1]);
 
-			if (olditm)
+			if (BurstVariables::olditm)
 				point_to_point_ITM(elev,source.alt*METERS_PER_FOOT, 
   		 		destination.alt*METERS_PER_FOOT, LR.eps_dielect,
 				LR.sgm_conductivity, LR.eno_ns_surfref, LR.frq_mhz,
@@ -3782,8 +3781,8 @@ void PlotLOSMap(struct site source, double altitude)
 
 	fprintf(stdout,"\nComputing line-of-sight coverage of \"%s\" with an RX antenna\nat %.2f %s AGL",source.name,metric?altitude*METERS_PER_FOOT:altitude,metric?"meters":"feet");
 
-	if (clutter>0.0)
-		fprintf(stdout," and %.2f %s of ground clutter",metric?clutter*METERS_PER_FOOT:clutter,metric?"meters":"feet");
+	if (BurstVariables::clutter>0.0)
+		fprintf(stdout," and %.2f %s of ground clutter",metric?BurstVariables::clutter*METERS_PER_FOOT:BurstVariables::clutter,metric?"meters":"feet");
 
 	fprintf(stdout,"...\n\n 0%c to  25%c ",37,37);
 	fflush(stdout);
@@ -3793,17 +3792,17 @@ void PlotLOSMap(struct site source, double altitude)
 	
 	th=ppd/64.0;
 
-	z=(int)(th*ReduceAngle(max_west-min_west));
+	z=(int)(th*ReduceAngle(BurstVariables::max_west-BurstVariables::min_west));
 
-	minwest=dpp+(double)min_west;
-	maxnorth=(double)max_north-dpp;
+	minwest=dpp+(double)BurstVariables::min_west;
+	maxnorth=(double)BurstVariables::max_north-dpp;
 
-	for (lon=minwest, x=0, y=0; (LonDiff(lon,(double)max_west)<=0.0); y++, lon=minwest+(dpp*(double)y))
+	for (lon=minwest, x=0, y=0; (LonDiff(lon,(double)BurstVariables::max_west)<=0.0); y++, lon=minwest+(dpp*(double)y))
 	{
 		if (lon>=360.0)
 			lon-=360.0;
 
-		edge.lat=max_north;
+		edge.lat=BurstVariables::max_north;
 		edge.lon=lon;
 		edge.alt=altitude;
 
@@ -3827,12 +3826,12 @@ void PlotLOSMap(struct site source, double altitude)
 	fprintf(stdout,"\n25%c to  50%c ",37,37);
 	fflush(stdout);
 	
-	z=(int)(th*(double)(max_north-min_north));
+	z=(int)(th*(double)(BurstVariables::max_north-BurstVariables::min_north));
 
-	for (lat=maxnorth, x=0, y=0; lat>=(double)min_north; y++, lat=maxnorth-(dpp*(double)y))
+	for (lat=maxnorth, x=0, y=0; lat>=(double)BurstVariables::min_north; y++, lat=maxnorth-(dpp*(double)y))
 	{
 		edge.lat=lat;
-		edge.lon=min_west;
+		edge.lon=BurstVariables::min_west;
 		edge.alt=altitude;
 
 		PlotPath(source,edge,mask_value);
@@ -3855,14 +3854,14 @@ void PlotLOSMap(struct site source, double altitude)
 	fprintf(stdout,"\n50%c to  75%c ",37,37);
 	fflush(stdout);
 
-	z=(int)(th*ReduceAngle(max_west-min_west));
+	z=(int)(th*ReduceAngle(BurstVariables::max_west-BurstVariables::min_west));
 
-	for (lon=minwest, x=0, y=0; (LonDiff(lon,(double)max_west)<=0.0); y++, lon=minwest+(dpp*(double)y))
+	for (lon=minwest, x=0, y=0; (LonDiff(lon,(double)BurstVariables::max_west)<=0.0); y++, lon=minwest+(dpp*(double)y))
 	{
 		if (lon>=360.0)
 			lon-=360.0;
 
-		edge.lat=min_north;
+		edge.lat=BurstVariables::min_north;
 		edge.lon=lon;
 		edge.alt=altitude;
 
@@ -3886,12 +3885,12 @@ void PlotLOSMap(struct site source, double altitude)
 	fprintf(stdout,"\n75%c to 100%c ",37,37);
 	fflush(stdout);
 	
-	z=(int)(th*(double)(max_north-min_north));
+	z=(int)(th*(double)(BurstVariables::max_north-BurstVariables::min_north));
 
-	for (lat=(double)min_north, x=0, y=0; lat<(double)max_north; y++, lat=(double)min_north+(dpp*(double)y))
+	for (lat=(double)BurstVariables::min_north, x=0, y=0; lat<(double)BurstVariables::max_north; y++, lat=(double)BurstVariables::min_north+(dpp*(double)y))
 	{
 		edge.lat=lat;
-		edge.lon=max_west;
+		edge.lon=BurstVariables::max_west;
 		edge.alt=altitude;
 
 		PlotPath(source,edge,mask_value);
@@ -3946,8 +3945,8 @@ void PlotLRMap(struct site source, double altitude, char *plo_filename)
 	static unsigned char mask_value=1;
 	FILE *fd=NULL;
 
-	minwest=dpp+(double)min_west;
-	maxnorth=(double)max_north-dpp;
+	minwest=dpp+(double)BurstVariables::min_west;
+	maxnorth=(double)BurstVariables::max_north-dpp;
 
 	symbol[0]='.';
 	symbol[1]='o';
@@ -3956,7 +3955,7 @@ void PlotLRMap(struct site source, double altitude, char *plo_filename)
 
 	count=0;
 
-	if (olditm)
+	if (BurstVariables::olditm)
 		fprintf(stdout,"\nComputing ITM ");
 	else
 		fprintf(stdout,"\nComputing ITWOM ");
@@ -3971,10 +3970,10 @@ void PlotLRMap(struct site source, double altitude, char *plo_filename)
 			fprintf(stdout,"field strength");
 	}
  
-	fprintf(stdout," contours of \"%s\"\nout to a radius of %.2f %s with an RX antenna at %.2f %s AGL",source.name,metric?max_range*KM_PER_MILE:max_range,metric?"kilometers":"miles",metric?altitude*METERS_PER_FOOT:altitude,metric?"meters":"feet");
+	fprintf(stdout," contours of \"%s\"\nout to a radius of %.2f %s with an RX antenna at %.2f %s AGL",source.name,metric?BurstVariables::max_range*KM_PER_MILE:BurstVariables::max_range,metric?"kilometers":"miles",metric?altitude*METERS_PER_FOOT:altitude,metric?"meters":"feet");
 
-	if (clutter>0.0)
-		fprintf(stdout,"\nand %.2f %s of ground clutter",metric?clutter*METERS_PER_FOOT:clutter,metric?"meters":"feet");
+	if (BurstVariables::clutter>0.0)
+		fprintf(stdout,"\nand %.2f %s of ground clutter",metric?BurstVariables::clutter*METERS_PER_FOOT:BurstVariables::clutter,metric?"meters":"feet");
 
 	fprintf(stdout,"...\n\n 0%c to  25%c ",37,37);
 	fflush(stdout);
@@ -3986,7 +3985,7 @@ void PlotLRMap(struct site source, double altitude, char *plo_filename)
 	{
 		/* Write header information to output file */
 
-		fprintf(fd,"%d, %d\t; max_west, min_west\n%d, %d\t; max_north, min_north\n",max_west, min_west, max_north, min_north);
+		fprintf(fd,"%d, %d\t; max_west, min_west\n%d, %d\t; max_north, min_north\n",BurstVariables::max_west, BurstVariables::min_west, BurstVariables::max_north, BurstVariables::min_north);
 	}
 
 	/* th=pixels/degree divided by 64 loops per
@@ -3994,14 +3993,14 @@ void PlotLRMap(struct site source, double altitude, char *plo_filename)
 	
 	th=ppd/64.0;
 
-	z=(int)(th*ReduceAngle(max_west-min_west));
+	z=(int)(th*ReduceAngle(BurstVariables::max_west-BurstVariables::min_west));
 
-	for (lon=minwest, x=0, y=0; (LonDiff(lon,(double)max_west)<=0.0); y++, lon=minwest+(dpp*(double)y))
+	for (lon=minwest, x=0, y=0; (LonDiff(lon,(double)BurstVariables::max_west)<=0.0); y++, lon=minwest+(dpp*(double)y))
 	{
 		if (lon>=360.0)
 			lon-=360.0;
 
-		edge.lat=max_north;
+		edge.lat=BurstVariables::max_north;
 		edge.lon=lon;
 		edge.alt=altitude;
 
@@ -4025,12 +4024,12 @@ void PlotLRMap(struct site source, double altitude, char *plo_filename)
 	fprintf(stdout,"\n25%c to  50%c ",37,37);
 	fflush(stdout);
 	
-	z=(int)(th*(double)(max_north-min_north));
+	z=(int)(th*(double)(BurstVariables::max_north-BurstVariables::min_north));
 
-	for (lat=maxnorth, x=0, y=0; lat>=(double)min_north; y++, lat=maxnorth-(dpp*(double)y))
+	for (lat=maxnorth, x=0, y=0; lat>=(double)BurstVariables::min_north; y++, lat=maxnorth-(dpp*(double)y))
 	{
 		edge.lat=lat;
-		edge.lon=min_west;
+		edge.lon=BurstVariables::min_west;
 		edge.alt=altitude;
 
 		PlotLRPath(source,edge,mask_value,fd);
@@ -4053,14 +4052,14 @@ void PlotLRMap(struct site source, double altitude, char *plo_filename)
 	fprintf(stdout,"\n50%c to  75%c ",37,37);
 	fflush(stdout);
 
-	z=(int)(th*ReduceAngle(max_west-min_west));
+	z=(int)(th*ReduceAngle(BurstVariables::max_west-BurstVariables::min_west));
 
-	for (lon=minwest, x=0, y=0; (LonDiff(lon,(double)max_west)<=0.0); y++, lon=minwest+(dpp*(double)y))
+	for (lon=minwest, x=0, y=0; (LonDiff(lon,(double)BurstVariables::max_west)<=0.0); y++, lon=minwest+(dpp*(double)y))
 	{
 		if (lon>=360.0)
 			lon-=360.0;
 
-		edge.lat=min_north;
+		edge.lat=BurstVariables::min_north;
 		edge.lon=lon;
 		edge.alt=altitude;
 
@@ -4084,12 +4083,12 @@ void PlotLRMap(struct site source, double altitude, char *plo_filename)
 	fprintf(stdout,"\n75%c to 100%c ",37,37);
 	fflush(stdout);
 	
-	z=(int)(th*(double)(max_north-min_north));
+	z=(int)(th*(double)(BurstVariables::max_north-BurstVariables::min_north));
 
-	for (lat=(double)min_north, x=0, y=0; lat<(double)max_north; y++, lat=(double)min_north+(dpp*(double)y))
+	for (lat=(double)BurstVariables::min_north, x=0, y=0; lat<(double)BurstVariables::max_north; y++, lat=(double)BurstVariables::min_north+(dpp*(double)y))
 	{
 		edge.lat=lat;
-		edge.lon=max_west;
+		edge.lon=BurstVariables::max_west;
 		edge.alt=altitude;
 
 		PlotLRPath(source,edge,mask_value,fd);
@@ -4621,13 +4620,13 @@ void GraphTerrain(struct site source, struct site destination, char *name)
 
 	fd=fopen("profile.gp","wb");
 
-	if (clutter>0.0)
+	if (BurstVariables::clutter>0.0)
 		fd1=fopen("clutter.gp","wb");
 
 	for (x=0; x<path.length; x++)
 	{
-		if ((path.elevation[x]+clutter)>maxheight)
-			maxheight=path.elevation[x]+clutter;
+		if ((path.elevation[x]+BurstVariables::clutter)>maxheight)
+			maxheight=path.elevation[x]+BurstVariables::clutter;
 
 		if (path.elevation[x]<minheight)
 			minheight=path.elevation[x];
@@ -4637,7 +4636,7 @@ void GraphTerrain(struct site source, struct site destination, char *name)
 			fprintf(fd,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*path.elevation[x]);
 
 			if (fd1!=NULL && x>0 && x<path.length-2)
-				fprintf(fd1,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*(path.elevation[x]==0.0?path.elevation[x]:(path.elevation[x]+clutter)));
+				fprintf(fd1,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*(path.elevation[x]==0.0?path.elevation[x]:(path.elevation[x]+BurstVariables::clutter)));
 		}
 
 		else
@@ -4645,7 +4644,7 @@ void GraphTerrain(struct site source, struct site destination, char *name)
 			fprintf(fd,"%f\t%f\n",path.distance[x],path.elevation[x]);
 
 			if (fd1!=NULL && x>0 && x<path.length-2)
-				fprintf(fd1,"%f\t%f\n",path.distance[x],(path.elevation[x]==0.0?path.elevation[x]:(path.elevation[x]+clutter)));
+				fprintf(fd1,"%f\t%f\n",path.distance[x],(path.elevation[x]==0.0?path.elevation[x]:(path.elevation[x]+BurstVariables::clutter)));
 		}
 	}
 
@@ -4716,7 +4715,7 @@ void GraphTerrain(struct site source, struct site destination, char *name)
 	fprintf(fd,"set yrange [%2.3f to %2.3f]\n", metric?minheight*METERS_PER_FOOT:minheight, metric?maxheight*METERS_PER_FOOT:maxheight);
 	fprintf(fd,"set encoding iso_8859_1\n");
 	fprintf(fd,"set term %s\n",term);
-	fprintf(fd,"set title \"%s Terrain Profile Between %s and %s (%.2f%c Azimuth)\"\n",splat_name,destination.name, source.name, Azimuth(destination,source),176);
+	fprintf(fd,"set title \"%s Terrain Profile Between %s and %s (%.2f%c Azimuth)\"\n",BurstVariables::splat_name,destination.name, source.name, Azimuth(destination,source),176);
 
 	if (metric)
 	{
@@ -4732,12 +4731,12 @@ void GraphTerrain(struct site source, struct site destination, char *name)
 
 	fprintf(fd,"set output \"%s.%s\"\n",basename,ext);
 
-	if (clutter>0.0)
+	if (BurstVariables::clutter>0.0)
 	{
 		if (metric)
-			fprintf(fd,"plot \"profile.gp\" title \"Terrain Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f meters)\" with lines\n",clutter*METERS_PER_FOOT);
+			fprintf(fd,"plot \"profile.gp\" title \"Terrain Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f meters)\" with lines\n",BurstVariables::clutter*METERS_PER_FOOT);
 		else
-			fprintf(fd,"plot \"profile.gp\" title \"Terrain Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f feet)\" with lines\n",clutter);
+			fprintf(fd,"plot \"profile.gp\" title \"Terrain Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f feet)\" with lines\n",BurstVariables::clutter);
 	}
 
 	else
@@ -4749,7 +4748,7 @@ void GraphTerrain(struct site source, struct site destination, char *name)
 
 	if (x!=-1)
 	{
-		if (gpsav==0)
+		if (BurstVariables::gpsav==0)
 		{	
 			unlink("splat.gp");
 			unlink("profile.gp");
@@ -4786,7 +4785,7 @@ void GraphElevation(struct site source, struct site destination, char *name)
 
 	fd=fopen("profile.gp","wb");
 
-	if (clutter>0.0)
+	if (BurstVariables::clutter>0.0)
 		fd1=fopen("clutter.gp","wb");
 
 	fd2=fopen("reference.gp","wb");
@@ -4798,13 +4797,13 @@ void GraphElevation(struct site source, struct site destination, char *name)
 		remote.alt=0.0;
 		angle=ElevationAngle(destination,remote);
 
-		if (clutter>0.0)
+		if (BurstVariables::clutter>0.0)
 		{
 			remote2.lat=path.lat[x];
 			remote2.lon=path.lon[x];
 
 			if (path.elevation[x]!=0.0)
-				remote2.alt=clutter;
+				remote2.alt=BurstVariables::clutter;
 			else
 				remote2.alt=0.0;
 
@@ -4919,7 +4918,7 @@ void GraphElevation(struct site source, struct site destination, char *name)
 
 	fprintf(fd,"set encoding iso_8859_1\n");
 	fprintf(fd,"set term %s\n",term);
-	fprintf(fd,"set title \"%s Elevation Profile Between %s and %s (%.2f%c azimuth)\"\n",splat_name,destination.name,source.name,Azimuth(destination,source),176);
+	fprintf(fd,"set title \"%s Elevation Profile Between %s and %s (%.2f%c azimuth)\"\n",BurstVariables::splat_name,destination.name,source.name,Azimuth(destination,source),176);
 
 	if (metric)
 		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",destination.name,source.name,KM_PER_MILE*distance);
@@ -4930,12 +4929,12 @@ void GraphElevation(struct site source, struct site destination, char *name)
 	fprintf(fd,"set ylabel \"Elevation Angle Along LOS Path Between\\n%s and %s (degrees)\"\n",destination.name,source.name);
 	fprintf(fd,"set output \"%s.%s\"\n",basename,ext);
 
-	if (clutter>0.0)
+	if (BurstVariables::clutter>0.0)
 	{
 		if (metric)
-			fprintf(fd,"plot \"profile.gp\" title \"Real Earth Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f meters)\" with lines, \"reference.gp\" title \"Line of Sight Path (%.2f%c elevation)\" with lines\n",clutter*METERS_PER_FOOT,refangle,176);
+			fprintf(fd,"plot \"profile.gp\" title \"Real Earth Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f meters)\" with lines, \"reference.gp\" title \"Line of Sight Path (%.2f%c elevation)\" with lines\n",BurstVariables::clutter*METERS_PER_FOOT,refangle,176);
 		else
-			fprintf(fd,"plot \"profile.gp\" title \"Real Earth Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f feet)\" with lines, \"reference.gp\" title \"Line of Sight Path (%.2f%c elevation)\" with lines\n",clutter,refangle,176);
+			fprintf(fd,"plot \"profile.gp\" title \"Real Earth Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f feet)\" with lines, \"reference.gp\" title \"Line of Sight Path (%.2f%c elevation)\" with lines\n",BurstVariables::clutter,refangle,176);
 	}
 
 	else
@@ -4947,13 +4946,13 @@ void GraphElevation(struct site source, struct site destination, char *name)
 
 	if (x!=-1)
 	{
-		if (gpsav==0)
+		if (BurstVariables::gpsav==0)
 		{
 			unlink("splat.gp");
 			unlink("profile.gp");
 			unlink("reference.gp");
 
-			if (clutter>0.0)
+			if (BurstVariables::clutter>0.0)
 				unlink("clutter.gp");
 		}	
 
@@ -4991,7 +4990,7 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 	azimuth=Azimuth(destination,source);
 	distance=Distance(destination,source);
 	refangle=ElevationAngle(destination,source);
-	b=GetElevation(destination)+destination.alt+earthradius;
+	b=GetElevation(destination)+destination.alt+BurstVariables::earthradius;
 
 	/* Wavelength and path distance (great circle) in feet. */
 
@@ -5011,7 +5010,7 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 
 	fd=fopen("profile.gp","wb");
 
-	if (clutter>0.0)
+	if (BurstVariables::clutter>0.0)
 		fd1=fopen("clutter.gp","wb");
 
 	fd2=fopen("reference.gp","wb");
@@ -5034,8 +5033,8 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 		if (x==0)
 			terrain+=destination.alt;  /* RX antenna spike */
 
-		a=terrain+earthradius;
- 		cangle=5280.0*Distance(destination,remote)/earthradius;
+		a=terrain+BurstVariables::earthradius;
+ 		cangle=5280.0*Distance(destination,remote)/BurstVariables::earthradius;
 		c=b*sin(refangle*DEG2RAD+HALFPI)/sin(HALFPI-refangle*DEG2RAD-cangle);
 
 		height=a-c;
@@ -5053,7 +5052,7 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 		{
 			d1=5280.0*path.distance[x];
 			f_zone=-1.0*sqrt(lambda*d1*(d-d1)/d);
-			fpt6_zone=f_zone*fzone_clearance;
+			fpt6_zone=f_zone*BurstVariables::fzone_clearance;
 		}
 
 		if (normalized)
@@ -5076,7 +5075,7 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 			fprintf(fd,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*height);
 
 			if (fd1!=NULL && x>0 && x<path.length-2)
-				fprintf(fd1,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*(terrain==0.0?height:(height+clutter)));
+				fprintf(fd1,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*(terrain==0.0?height:(height+BurstVariables::clutter)));
 
 			fprintf(fd2,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*r);
 			fprintf(fd5,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*(height-terrain));
@@ -5087,7 +5086,7 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 			fprintf(fd,"%f\t%f\n",path.distance[x],height);
 
 			if (fd1!=NULL && x>0 && x<path.length-2)
-				fprintf(fd1,"%f\t%f\n",path.distance[x],(terrain==0.0?height:(height+clutter)));
+				fprintf(fd1,"%f\t%f\n",path.distance[x],(terrain==0.0?height:(height+BurstVariables::clutter)));
 
 			fprintf(fd2,"%f\t%f\n",path.distance[x],r);
 			fprintf(fd5,"%f\t%f\n",path.distance[x],height-terrain);
@@ -5111,8 +5110,8 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 				minheight=f_zone;
 		}
 
-		if ((height+clutter)>maxheight)
-			maxheight=height+clutter;
+		if ((height+BurstVariables::clutter)>maxheight)
+			maxheight=height+BurstVariables::clutter;
 
 		if (height<minheight)
 			minheight=height;
@@ -5255,10 +5254,10 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 	fprintf(fd,"set term %s\n",term);
 
 	if ((LR.frq_mhz>=20.0) && (LR.frq_mhz<=20000.0) && fresnel_plot)
-		fprintf(fd,"set title \"%s Path Profile Between %s and %s (%.2f%c azimuth)\\nWith First Fresnel Zone\"\n",splat_name, destination.name, source.name, azimuth,176);
+		fprintf(fd,"set title \"%s Path Profile Between %s and %s (%.2f%c azimuth)\\nWith First Fresnel Zone\"\n",BurstVariables::splat_name, destination.name, source.name, azimuth,176);
 
 	else
-		fprintf(fd,"set title \"%s Height Profile Between %s and %s (%.2f%c azimuth)\"\n",splat_name, destination.name, source.name, azimuth,176);
+		fprintf(fd,"set title \"%s Height Profile Between %s and %s (%.2f%c azimuth)\"\n",BurstVariables::splat_name, destination.name, source.name, azimuth,176);
 
 	if (metric)
 		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",destination.name,source.name,KM_PER_MILE*Distance(source,destination));
@@ -5288,26 +5287,26 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 
 	if ((LR.frq_mhz>=20.0) && (LR.frq_mhz<=20000.0) && fresnel_plot)
 	{
-		if (clutter>0.0)
+		if (BurstVariables::clutter>0.0)
 		{
 			if (metric)
-				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f meters)\" with lines, \"reference.gp\" title \"Line of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines, \"fresnel.gp\" axes x1y1 title \"First Fresnel Zone (%.3f MHz)\" with lines, \"fresnel_pt_6.gp\" title \"%.0f%% of First Fresnel Zone\" with lines\n",clutter*METERS_PER_FOOT,LR.frq_mhz,fzone_clearance*100.0);
+				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f meters)\" with lines, \"reference.gp\" title \"Line of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines, \"fresnel.gp\" axes x1y1 title \"First Fresnel Zone (%.3f MHz)\" with lines, \"fresnel_pt_6.gp\" title \"%.0f%% of First Fresnel Zone\" with lines\n",BurstVariables::clutter*METERS_PER_FOOT,LR.frq_mhz,BurstVariables::fzone_clearance*100.0);
 			else
-				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f feet)\" with lines, \"reference.gp\" title \"Line of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines, \"fresnel.gp\" axes x1y1 title \"First Fresnel Zone (%.3f MHz)\" with lines, \"fresnel_pt_6.gp\" title \"%.0f%% of First Fresnel Zone\" with lines\n",clutter,LR.frq_mhz,fzone_clearance*100.0);
+				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f feet)\" with lines, \"reference.gp\" title \"Line of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines, \"fresnel.gp\" axes x1y1 title \"First Fresnel Zone (%.3f MHz)\" with lines, \"fresnel_pt_6.gp\" title \"%.0f%% of First Fresnel Zone\" with lines\n",BurstVariables::clutter,LR.frq_mhz,BurstVariables::fzone_clearance*100.0);
 		}
 
 		else
-			fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"reference.gp\" title \"Line of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines, \"fresnel.gp\" axes x1y1 title \"First Fresnel Zone (%.3f MHz)\" with lines, \"fresnel_pt_6.gp\" title \"%.0f%% of First Fresnel Zone\" with lines\n",LR.frq_mhz,fzone_clearance*100.0);
+			fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"reference.gp\" title \"Line of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines, \"fresnel.gp\" axes x1y1 title \"First Fresnel Zone (%.3f MHz)\" with lines, \"fresnel_pt_6.gp\" title \"%.0f%% of First Fresnel Zone\" with lines\n",LR.frq_mhz,BurstVariables::fzone_clearance*100.0);
 	}
 
 	else
 	{
-		if (clutter>0.0)
+		if (BurstVariables::clutter>0.0)
 		{
 			if (metric)
-				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f meters)\" with lines, \"reference.gp\" title \"Line Of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines\n",clutter*METERS_PER_FOOT);
+				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f meters)\" with lines, \"reference.gp\" title \"Line Of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines\n",BurstVariables::clutter*METERS_PER_FOOT);
 			else
-				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f feet)\" with lines, \"reference.gp\" title \"Line Of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines\n",clutter);
+				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f feet)\" with lines, \"reference.gp\" title \"Line Of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines\n",BurstVariables::clutter);
 		}
 
 		else
@@ -5321,7 +5320,7 @@ void GraphHeight(struct site source, struct site destination, char *name, unsign
 
 	if (x!=-1)
 	{
-		if (gpsav==0)
+		if (BurstVariables::gpsav==0)
 		{
 			unlink("splat.gp");
 			unlink("profile.gp");
@@ -5359,11 +5358,11 @@ void ObstructionAnalysis(struct site xmtr, struct site rcvr, double f, FILE *out
 	char	string[255], string_fpt6[255], string_f1[255];
 
 	ReadPath(xmtr,rcvr);
-	h_r=GetElevation(rcvr)+rcvr.alt+earthradius;
+	h_r=GetElevation(rcvr)+rcvr.alt+BurstVariables::earthradius;
 	h_r_f1=h_r;
 	h_r_fpt6=h_r;
 	h_r_orig=h_r;
-	h_t=GetElevation(xmtr)+xmtr.alt+earthradius;
+	h_t=GetElevation(xmtr)+xmtr.alt+BurstVariables::earthradius;
 	d_tx=5280.0*Distance(rcvr,xmtr);
 	cos_tx_angle=((h_r*h_r)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r*d_tx);
 	cos_tx_angle_f1=cos_tx_angle;
@@ -5372,14 +5371,14 @@ void ObstructionAnalysis(struct site xmtr, struct site rcvr, double f, FILE *out
 	if (f)
 		lambda=9.8425e8/(f*1e6);
 
-	if (clutter>0.0)
+	if (BurstVariables::clutter>0.0)
 	{
 		fprintf(outfile,"Terrain has been raised by");
 
 		if (metric)
-			fprintf(outfile," %.2f meters",METERS_PER_FOOT*clutter);
+			fprintf(outfile," %.2f meters",METERS_PER_FOOT*BurstVariables::clutter);
 		else
-			fprintf(outfile," %.2f feet",clutter);
+			fprintf(outfile," %.2f feet",BurstVariables::clutter);
 
 		fprintf(outfile," to account for ground clutter.\n\n");
 	}
@@ -5404,7 +5403,7 @@ void ObstructionAnalysis(struct site xmtr, struct site rcvr, double f, FILE *out
 		site_x.lon=path.lon[x];
 		site_x.alt=0.0;
 
-		h_x=GetElevation(site_x)+earthradius+clutter;
+		h_x=GetElevation(site_x)+BurstVariables::earthradius+BurstVariables::clutter;
 		d_x=5280.0*Distance(rcvr,site_x);
 
 		/* Deal with the LOS path first. */
@@ -5414,23 +5413,23 @@ void ObstructionAnalysis(struct site xmtr, struct site rcvr, double f, FILE *out
 		if (cos_tx_angle>cos_test_angle)
 		{
 			if (h_r==h_r_orig)
-				fprintf(outfile,"Between %s and %s, %s detected obstructions at:\n\n",rcvr.name,xmtr.name,splat_name);
+				fprintf(outfile,"Between %s and %s, %s detected obstructions at:\n\n",rcvr.name,xmtr.name,BurstVariables::splat_name);
 
 			if (site_x.lat>=0.0)
 			{
 				if (metric)
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",site_x.lat, site_x.lon, KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
+					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",site_x.lat, site_x.lon, KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-BurstVariables::earthradius));
 				else
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",site_x.lat, site_x.lon, d_x/5280.0, h_x-earthradius);
+					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",site_x.lat, site_x.lon, d_x/5280.0, h_x-BurstVariables::earthradius);
 			}
 
 			else
 			{
 				if (metric)
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",-site_x.lat, site_x.lon, KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
+					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",-site_x.lat, site_x.lon, KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-BurstVariables::earthradius));
 				else
 
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",-site_x.lat, site_x.lon, d_x/5280.0, h_x-earthradius);
+					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",-site_x.lat, site_x.lon, d_x/5280.0, h_x-BurstVariables::earthradius);
 			}
 		}
 
@@ -5461,14 +5460,14 @@ void ObstructionAnalysis(struct site xmtr, struct site rcvr, double f, FILE *out
 
 			cos_tx_angle_fpt6=((h_r_fpt6*h_r_fpt6)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r_fpt6*d_tx);
 			h_los=sqrt(h_r_fpt6*h_r_fpt6+d_x*d_x-2*h_r_fpt6*d_x*cos_tx_angle_fpt6);
-			h_f=h_los-fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
+			h_f=h_los-BurstVariables::fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
 
 			while (h_f<h_x)
 			{
 				h_r_fpt6+=1;
 				cos_tx_angle_fpt6=((h_r_fpt6*h_r_fpt6)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r_fpt6*d_tx);
 				h_los=sqrt(h_r_fpt6*h_r_fpt6+d_x*d_x-2*h_r_fpt6*d_x*cos_tx_angle_fpt6);
-				h_f=h_los-fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
+				h_f=h_los-BurstVariables::fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
 			}
 		}
 	}
@@ -5476,35 +5475,35 @@ void ObstructionAnalysis(struct site xmtr, struct site rcvr, double f, FILE *out
 	if (h_r>h_r_orig)
 	{
 		if (metric)
-			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear all obstructions detected by %s.\n",rcvr.name, METERS_PER_FOOT*(h_r-GetElevation(rcvr)-earthradius),splat_name);
+			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear all obstructions detected by %s.\n",rcvr.name, METERS_PER_FOOT*(h_r-GetElevation(rcvr)-BurstVariables::earthradius),BurstVariables::splat_name);
 		else
-			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear all obstructions detected by %s.\n",rcvr.name, h_r-GetElevation(rcvr)-earthradius,splat_name);
+			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear all obstructions detected by %s.\n",rcvr.name, h_r-GetElevation(rcvr)-BurstVariables::earthradius,BurstVariables::splat_name);
 	}
 
 	else
-		snprintf(string,150,"\nNo obstructions to LOS path due to terrain were detected by %s\n",splat_name);
+		snprintf(string,150,"\nNo obstructions to LOS path due to terrain were detected by %s\n",BurstVariables::splat_name);
 
 	if (f)
 	{
 		if (h_r_fpt6>h_r_orig)
 		{
 			if (metric)
-				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear %.0f%c of the first Fresnel zone.\n",rcvr.name, METERS_PER_FOOT*(h_r_fpt6-GetElevation(rcvr)-earthradius),fzone_clearance*100.0,37);
+				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear %.0f%c of the first Fresnel zone.\n",rcvr.name, METERS_PER_FOOT*(h_r_fpt6-GetElevation(rcvr)-BurstVariables::earthradius),BurstVariables::fzone_clearance*100.0,37);
 
 			else
-				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear %.0f%c of the first Fresnel zone.\n",rcvr.name, h_r_fpt6-GetElevation(rcvr)-earthradius,fzone_clearance*100.0,37);
+				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear %.0f%c of the first Fresnel zone.\n",rcvr.name, h_r_fpt6-GetElevation(rcvr)-BurstVariables::earthradius,BurstVariables::fzone_clearance*100.0,37);
 		}
 
 		else
-			snprintf(string_fpt6,150,"\n%.0f%c of the first Fresnel zone is clear.\n",fzone_clearance*100.0,37);
+			snprintf(string_fpt6,150,"\n%.0f%c of the first Fresnel zone is clear.\n",BurstVariables::fzone_clearance*100.0,37);
 	
 		if (h_r_f1>h_r_orig)
 		{
 			if (metric)
-				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear the first Fresnel zone.\n",rcvr.name, METERS_PER_FOOT*(h_r_f1-GetElevation(rcvr)-earthradius));
+				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear the first Fresnel zone.\n",rcvr.name, METERS_PER_FOOT*(h_r_f1-GetElevation(rcvr)-BurstVariables::earthradius));
 
 			else			
-				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear the first Fresnel zone.\n",rcvr.name, h_r_f1-GetElevation(rcvr)-earthradius);
+				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear the first Fresnel zone.\n",rcvr.name, h_r_f1-GetElevation(rcvr)-BurstVariables::earthradius);
 
 		}
 
@@ -5537,12 +5536,12 @@ const char* ObstructionAnalysisBurst(struct site xmtr, struct site rcvr, double 
 	char	string[255], string_fpt6[255], string_f1[255];
 
 	ReadPath(xmtr,rcvr);
-	h_r=GetElevation(rcvr)+rcvr.alt+earthradius;
+	h_r=GetElevation(rcvr)+rcvr.alt+BurstVariables::earthradius;
 	
 	h_r_f1=h_r;
 	h_r_fpt6=h_r;
 	h_r_orig=h_r;
-	h_t=GetElevation(xmtr)+xmtr.alt+earthradius;
+	h_t=GetElevation(xmtr)+xmtr.alt+BurstVariables::earthradius;
 	d_tx=5280.0*Distance(rcvr,xmtr);
 	cos_tx_angle=((h_r*h_r)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r*d_tx);
 	cos_tx_angle_f1=cos_tx_angle;
@@ -5551,14 +5550,14 @@ const char* ObstructionAnalysisBurst(struct site xmtr, struct site rcvr, double 
 	if (f)
 		lambda=9.8425e8/(f*1e6);
 
-	if (clutter>0.0)
+	if (BurstVariables::clutter>0.0)
 	{
 		fprintf(outfile,"Terrain has been raised by");
 
 		if (metric)
-			fprintf(outfile," %.2f meters",METERS_PER_FOOT*clutter);
+			fprintf(outfile," %.2f meters",METERS_PER_FOOT*BurstVariables::clutter);
 		else
-			fprintf(outfile," %.2f feet",clutter);
+			fprintf(outfile," %.2f feet",BurstVariables::clutter);
 
 		fprintf(outfile," to account for ground clutter.\n\n");
 	}
@@ -5583,7 +5582,7 @@ const char* ObstructionAnalysisBurst(struct site xmtr, struct site rcvr, double 
 		site_x.lon=path.lon[x];
 		site_x.alt=0.0;
 
-		h_x=GetElevation(site_x)+earthradius+clutter;
+		h_x=GetElevation(site_x)+BurstVariables::earthradius+BurstVariables::clutter;
 		d_x=5280.0*Distance(rcvr,site_x);
 
 		/* Deal with the LOS path first. */
@@ -5593,23 +5592,23 @@ const char* ObstructionAnalysisBurst(struct site xmtr, struct site rcvr, double 
 		if (cos_tx_angle>cos_test_angle)
 		{
 			if (h_r==h_r_orig)
-				fprintf(outfile,"Between %s and %s, %s detected obstructions at:\n\n",rcvr.name,xmtr.name,splat_name);
+				fprintf(outfile,"Between %s and %s, %s detected obstructions at:\n\n",rcvr.name,xmtr.name,BurstVariables::splat_name);
 
 			if (site_x.lat>=0.0)
 			{
 				if (metric)
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",site_x.lat, site_x.lon, KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
+					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",site_x.lat, site_x.lon, KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-BurstVariables::earthradius));
 				else
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",site_x.lat, site_x.lon, d_x/5280.0, h_x-earthradius);
+					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",site_x.lat, site_x.lon, d_x/5280.0, h_x-BurstVariables::earthradius);
 			}
 
 			else
 			{
 				if (metric)
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",-site_x.lat, site_x.lon, KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
+					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",-site_x.lat, site_x.lon, KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-BurstVariables::earthradius));
 				else
 
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",-site_x.lat, site_x.lon, d_x/5280.0, h_x-earthradius);
+					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",-site_x.lat, site_x.lon, d_x/5280.0, h_x-BurstVariables::earthradius);
 			}
 		}
 
@@ -5640,14 +5639,14 @@ const char* ObstructionAnalysisBurst(struct site xmtr, struct site rcvr, double 
 
 			cos_tx_angle_fpt6=((h_r_fpt6*h_r_fpt6)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r_fpt6*d_tx);
 			h_los=sqrt(h_r_fpt6*h_r_fpt6+d_x*d_x-2*h_r_fpt6*d_x*cos_tx_angle_fpt6);
-			h_f=h_los-fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
+			h_f=h_los-BurstVariables::fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
 
 			while (h_f<h_x)
 			{
 				h_r_fpt6+=1;
 				cos_tx_angle_fpt6=((h_r_fpt6*h_r_fpt6)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r_fpt6*d_tx);
 				h_los=sqrt(h_r_fpt6*h_r_fpt6+d_x*d_x-2*h_r_fpt6*d_x*cos_tx_angle_fpt6);
-				h_f=h_los-fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
+				h_f=h_los-BurstVariables::fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
 			}
 		}
 	}
@@ -5655,35 +5654,35 @@ const char* ObstructionAnalysisBurst(struct site xmtr, struct site rcvr, double 
 	if (h_r>h_r_orig)
 	{
 		if (metric)
-			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear all obstructions detected by %s.\n",rcvr.name, METERS_PER_FOOT*(h_r-GetElevation(rcvr)-earthradius),splat_name);
+			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear all obstructions detected by %s.\n",rcvr.name, METERS_PER_FOOT*(h_r-GetElevation(rcvr)-BurstVariables::earthradius),BurstVariables::splat_name);
 		else
-			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear all obstructions detected by %s.\n",rcvr.name, h_r-GetElevation(rcvr)-earthradius,splat_name);
+			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear all obstructions detected by %s.\n",rcvr.name, h_r-GetElevation(rcvr)-BurstVariables::earthradius,BurstVariables::splat_name);
 	}
 
 	else
-		snprintf(string,150,"\nNo obstructions to LOS path due to terrain were detected by %s\n",splat_name);
+		snprintf(string,150,"\nNo obstructions to LOS path due to terrain were detected by %s\n",BurstVariables::splat_name);
 
 	if (f)
 	{
 		if (h_r_fpt6>h_r_orig)
 		{
 			if (metric)
-				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear %.0f%c of the first Fresnel zone.\n",rcvr.name, METERS_PER_FOOT*(h_r_fpt6-GetElevation(rcvr)-earthradius),fzone_clearance*100.0,37);
+				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear %.0f%c of the first Fresnel zone.\n",rcvr.name, METERS_PER_FOOT*(h_r_fpt6-GetElevation(rcvr)-BurstVariables::earthradius),BurstVariables::fzone_clearance*100.0,37);
 
 			else
-				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear %.0f%c of the first Fresnel zone.\n",rcvr.name, h_r_fpt6-GetElevation(rcvr)-earthradius,fzone_clearance*100.0,37);
+				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear %.0f%c of the first Fresnel zone.\n",rcvr.name, h_r_fpt6-GetElevation(rcvr)-BurstVariables::earthradius,BurstVariables::fzone_clearance*100.0,37);
 		}
 
 		else
-			snprintf(string_fpt6,150,"\n%.0f%c of the first Fresnel zone is clear.\n",fzone_clearance*100.0,37);
+			snprintf(string_fpt6,150,"\n%.0f%c of the first Fresnel zone is clear.\n",BurstVariables::fzone_clearance*100.0,37);
 	
 		if (h_r_f1>h_r_orig)
 		{
 			if (metric)
-				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear the first Fresnel zone.\n",rcvr.name, METERS_PER_FOOT*(h_r_f1-GetElevation(rcvr)-earthradius));
+				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear the first Fresnel zone.\n",rcvr.name, METERS_PER_FOOT*(h_r_f1-GetElevation(rcvr)-BurstVariables::earthradius));
 
 			else			
-				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear the first Fresnel zone.\n",rcvr.name, h_r_f1-GetElevation(rcvr)-earthradius);
+				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear the first Fresnel zone.\n",rcvr.name, h_r_f1-GetElevation(rcvr)-BurstVariables::earthradius);
 
 		}
 
@@ -5738,8 +5737,8 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 
 	fd2=fopen(report_name,"w");
 
-	fprintf(fd2,"\n\t\t--==[ %s v%s Path Analysis ]==--\n\n",splat_name,splat_version);
-	fprintf(fd2,"%s\n\n",dashes);
+	fprintf(fd2,"\n\t\t--==[ %s v%s Path Analysis ]==--\n\n",BurstVariables::splat_name,BurstVariables::splat_version);
+	fprintf(fd2,"%s\n\n",BurstVariables::dashes);
 	fprintf(fd2,"Transmitter site: %s\n",source.name);
 
 	if (source.lat>=0.0)
@@ -5781,9 +5780,9 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 
 	azimuth=Azimuth(source,destination);
 	angle1=ElevationAngle(source,destination);
-	angle2=ElevationAngleTwo(source,destination,earthradius);
+	angle2=ElevationAngleTwo(source,destination,BurstVariables::earthradius);
 
-	if (got_azimuth_pattern || got_elevation_pattern)
+	if (BurstVariables::got_azimuth_pattern || BurstVariables::got_elevation_pattern)
 	{
 		x=(int)rint(10.0*(10.0-angle2));
 
@@ -5817,7 +5816,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 		fprintf(fd2," angle to the first obstruction: %+.4f degrees\n",angle2);
 	}
 
-	fprintf(fd2,"\n%s\n\n",dashes);
+	fprintf(fd2,"\n%s\n\n",BurstVariables::dashes);
 
 	/* Receiver */
 
@@ -5868,7 +5867,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 	azimuth=Azimuth(destination,source);
 
 	angle1=ElevationAngle(destination,source);
-	angle2=ElevationAngleTwo(destination,source,earthradius);
+	angle2=ElevationAngleTwo(destination,source,BurstVariables::earthradius);
 
 	fprintf(fd2,"Azimuth to %s: %.2f degrees\n",source.name,azimuth);
 
@@ -5888,11 +5887,11 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 		fprintf(fd2," angle to the first obstruction: %+.4f degrees\n",angle2);
 	}
 
-	fprintf(fd2,"\n%s\n\n",dashes);
+	fprintf(fd2,"\n%s\n\n",BurstVariables::dashes);
 
 	if (LR.frq_mhz>0.0)
 	{
-		if (olditm)
+		if (BurstVariables::olditm)
 			fprintf(fd2,"Longley-Rice Parameters Used In This Analysis:\n\n");
 		else
 			fprintf(fd2,"ITWOM Version %.1f Parameters Used In This Analysis:\n\n",ITWOMVersion());
@@ -5989,7 +5988,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 			fprintf(fd2," (%+.2f dBm)\n",dBm);
 		}
 
-		fprintf(fd2,"\n%s\n\n",dashes);
+		fprintf(fd2,"\n%s\n\n",BurstVariables::dashes);
 
 		fprintf(fd2,"Summary For The Link Between %s and %s:\n\n",source.name, destination.name);
 
@@ -6002,7 +6001,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 		   path into the elev[] array. */
 
 		for (x=1; x<path.length-1; x++)
-			elev[x+2]=METERS_PER_FOOT*(path.elevation[x]==0.0?path.elevation[x]:(clutter+path.elevation[x]));
+			elev[x+2]=METERS_PER_FOOT*(path.elevation[x]==0.0?path.elevation[x]:(BurstVariables::clutter+path.elevation[x]));
 
 		/* Copy ending points without clutter */
 
@@ -6026,7 +6025,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 
 			cos_xmtr_angle=((source_alt2)+(distance*distance)-(dest_alt2))/(2.0*source_alt*distance);
 
-			if (got_elevation_pattern)
+			if (BurstVariables::got_elevation_pattern)
 			{
 				/* If an antenna elevation pattern is available, the
 				   following code determines the elevation angle to
@@ -6071,7 +6070,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 
 			elev[1]=METERS_PER_MILE*(path.distance[y]-path.distance[y-1]);
 
-			if (olditm)
+			if (BurstVariables::olditm)
 				point_to_point_ITM(elev,source.alt*METERS_PER_FOOT, 
   		 		destination.alt*METERS_PER_FOOT, LR.eps_dielect,
 				LR.sgm_conductivity, LR.eno_ns_surfref, LR.frq_mhz,
@@ -6132,7 +6131,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 			fprintf(fd2,"Free space path loss: %.2f dB\n",free_space_loss);
 		}
 
-		if (olditm)
+		if (BurstVariables::olditm)
 			fprintf(fd2,"Longley-Rice path loss: %.2f dB\n",loss);
 		else
 			fprintf(fd2,"ITWOM Version %.1f path loss: %.2f dB\n",ITWOMVersion(),loss);
@@ -6167,7 +6166,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 
 		fprintf(fd2,"Mode of propagation: ");
 		
-		if (olditm)
+		if (BurstVariables::olditm)
 		{
 			fprintf(fd2,"%s\n",strmode);
 			fprintf(fd2,"Longley-Rice model error number: %d",errnum);
@@ -6231,7 +6230,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 				fprintf(fd2,"  Results are probably invalid.\n");
 		}
 
-		fprintf(fd2,"\n%s\n\n",dashes);
+		fprintf(fd2,"\n%s\n\n",BurstVariables::dashes);
 	}
 
 	fprintf(stdout,"\nPath Loss Report written to: \"%s\"\n",report_name);
@@ -6295,18 +6294,18 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 		fprintf(fd,"set yrange [%2.3f to %2.3f]\n", minloss, maxloss);
 		fprintf(fd,"set encoding iso_8859_1\n");
 		fprintf(fd,"set term %s\n",term);
-		fprintf(fd,"set title \"%s Loss Profile Along Path Between %s and %s (%.2f%c azimuth)\"\n",splat_name, destination.name, source.name, Azimuth(destination,source),176);
+		fprintf(fd,"set title \"%s Loss Profile Along Path Between %s and %s (%.2f%c azimuth)\"\n",BurstVariables::splat_name, destination.name, source.name, Azimuth(destination,source),176);
 
 		if (metric)
 			fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",destination.name,source.name,KM_PER_MILE*Distance(destination,source));
 		else
 			fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f miles)\"\n",destination.name,source.name,Distance(destination,source));
 
-		if (got_azimuth_pattern || got_elevation_pattern)
+		if (BurstVariables::got_azimuth_pattern || BurstVariables::got_elevation_pattern)
 			fprintf(fd,"set ylabel \"Total Path Loss (including TX antenna pattern) (dB)");
 		else
 		{
-			if (olditm)
+			if (BurstVariables::olditm)
 				fprintf(fd,"set ylabel \"Longley-Rice Path Loss (dB)");
 			else
 				fprintf(fd,"set ylabel \"ITWOM Version %.1f Path Loss (dB)",ITWOMVersion());
@@ -6321,7 +6320,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 
 		if (x!=-1)
 		{
-			if (gpsav==0)
+			if (BurstVariables::gpsav==0)
 			{
 				unlink("splat.gp");
 				unlink("profile.gp");
@@ -6336,7 +6335,7 @@ void PathReport(struct site source, struct site destination, char *name, char gr
 			fprintf(stderr,"\n*** ERROR: Error occurred invoking gnuplot!\n");
 	}
 
-	if (x!=-1 && gpsav==0)
+	if (x!=-1 && BurstVariables::gpsav==0)
 		unlink("profile.gp");
 }
 
@@ -6355,9 +6354,9 @@ void SiteReport(struct site xmtr)
 
 	fd=fopen(report_name,"w");
 
-	fprintf(fd,"\n\t--==[ %s v%s Site Analysis Report For: %s ]==--\n\n",splat_name, splat_version, xmtr.name);
+	fprintf(fd,"\n\t--==[ %s v%s Site Analysis Report For: %s ]==--\n\n",BurstVariables::splat_name, BurstVariables::splat_version, xmtr.name);
 
-	fprintf(fd,"%s\n\n",dashes);
+	fprintf(fd,"%s\n\n",BurstVariables::dashes);
 
 	if (xmtr.lat>=0.0)
 	{
@@ -6416,7 +6415,7 @@ void SiteReport(struct site xmtr)
 		}
 	}
 
-	fprintf(fd,"\n%s\n\n",dashes);
+	fprintf(fd,"\n%s\n\n",BurstVariables::dashes);
 	fclose(fd);
 	fprintf(stdout,"\nSite analysis report written to: \"%s\"\n",report_name);
 }
@@ -6451,10 +6450,10 @@ void LoadTopoData(int max_lon, int min_lon, int max_lat, int min_lat)
 					ymax-=360;
 
 				if (ippd==3600)
-					snprintf(string,19,"%d:%d:%d:%d-hd",x, x+1, ymin, ymax);
+					snprintf(BurstVariables::string,19,"%d:%d:%d:%d-hd",x, x+1, ymin, ymax);
 				else
-					snprintf(string,16,"%d:%d:%d:%d",x, x+1, ymin, ymax);
-				LoadSDF(string);
+					snprintf(BurstVariables::string,16,"%d:%d:%d:%d",x, x+1, ymin, ymax);
+				LoadSDF(BurstVariables::string);
 			}
 	}
 
@@ -6480,10 +6479,10 @@ void LoadTopoData(int max_lon, int min_lon, int max_lat, int min_lat)
 					ymax-=360;
 
 				if (ippd==3600)
-					snprintf(string,19,"%d:%d:%d:%d-hd",x, x+1, ymin, ymax);
+					snprintf(BurstVariables::string,19,"%d:%d:%d:%d-hd",x, x+1, ymin, ymax);
 				else
-					snprintf(string,16,"%d:%d:%d:%d",x, x+1, ymin, ymax);
-				LoadSDF(string);
+					snprintf(BurstVariables::string,16,"%d:%d:%d:%d",x, x+1, ymin, ymax);
+				LoadSDF(BurstVariables::string);
 			}
 	}
 }
@@ -6493,6 +6492,7 @@ int LoadANO(char *filename)
 	/* This function reads a SPLAT! alphanumeric output 
 	   file (-ani option) for analysis and/or map generation. */
 
+	int contour_threshold = 0;
 	int	error=0, max_west, min_west, max_north, min_north;
 	char	string[80], *pointer=NULL;
 	double	latitude=0.0, longitude=0.0, azimuth=0.0, elevation=0.0,
@@ -6550,7 +6550,7 @@ int LoadANO(char *filename)
 				}
 			}
 
-			if (LR.erp!=0.0 && dbm!=0)
+			if (LR.erp!=0.0 && dbm)
 			{
 				/* signal power level in dBm */
 
@@ -6568,7 +6568,7 @@ int LoadANO(char *filename)
 				}
 			}
 
-			if (LR.erp!=0.0 && dbm==0)
+			if (LR.erp!=0.0 && !dbm)
 			{
 				/* field strength dBuV/m */
 
@@ -6620,7 +6620,7 @@ void WriteKML(struct site source, struct site destination)
 
 	fprintf(fd,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 	fprintf(fd,"<kml xmlns=\"http://earth.google.com/kml/2.0\">\n");
-	fprintf(fd,"<!-- Generated by %s Version %s -->\n",splat_name, splat_version);
+	fprintf(fd,"<!-- Generated by %s Version %s -->\n",BurstVariables::splat_name, BurstVariables::splat_version);
 	fprintf(fd,"<Folder>\n");
 	fprintf(fd,"<name>SPLAT! Path</name>\n");
 	fprintf(fd,"<open>1</open>\n");
@@ -6755,8 +6755,8 @@ void WriteKML(struct site source, struct site destination)
 	for (y=0; y<path.length; y++)
 	{
 		distance=5280.0*path.distance[y];
-		tx_alt=earthradius+source.alt+path.elevation[0];
-		rx_alt=earthradius+destination.alt+path.elevation[y];
+		tx_alt=BurstVariables::earthradius+source.alt+path.elevation[0];
+		rx_alt=BurstVariables::earthradius+destination.alt+path.elevation[y];
 
 		/* Calculate the cosine of the elevation of the
 		   transmitter as seen at the temp rx point. */
@@ -6766,7 +6766,7 @@ void WriteKML(struct site source, struct site destination)
 		for (x=y, block=0; x>=0 && block==0; x--)
 		{
 			distance=5280.0*(path.distance[y]-path.distance[x]);
-			test_alt=earthradius+path.elevation[x];
+			test_alt=BurstVariables::earthradius+path.elevation[x];
 
 			cos_test_angle=((rx_alt*rx_alt)+(distance*distance)-(test_alt*test_alt))/(2.0*rx_alt*distance);
 
@@ -6830,13 +6830,13 @@ ObstructionAnalysisReturn ObstructionAnalysisBURST(struct site xmtr, struct site
 
   
   ReadPath(xmtr,rcvr);
-    h_r=GetElevation(rcvr)+rcvr.alt+earthradius;
+    h_r=GetElevation(rcvr)+rcvr.alt+BurstVariables::earthradius;
     
   h_r_f1=h_r;
   h_r_fpt6=h_r;
   h_r_orig=h_r;
   
-    h_t=GetElevation(xmtr)+xmtr.alt+earthradius;
+    h_t=GetElevation(xmtr)+xmtr.alt+BurstVariables::earthradius;
     
   d_tx=5280.0*Distance(rcvr,xmtr);
   cos_tx_angle=((h_r*h_r)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r*d_tx);
@@ -6870,7 +6870,7 @@ ObstructionAnalysisReturn ObstructionAnalysisBURST(struct site xmtr, struct site
 
 
 
-      h_x=GetElevation(site_x)+earthradius+clutter;
+      h_x=GetElevation(site_x)+BurstVariables::earthradius+BurstVariables::clutter;
       d_x=5280.0*Distance(rcvr,site_x);
       //added this to avoid nan in computation of cos_test_angle further down
       if (d_x == 0.0)
@@ -6911,14 +6911,14 @@ ObstructionAnalysisReturn ObstructionAnalysisBURST(struct site xmtr, struct site
 	  
 	  cos_tx_angle_fpt6=((h_r_fpt6*h_r_fpt6)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r_fpt6*d_tx);
 	  h_los=sqrt(h_r_fpt6*h_r_fpt6+d_x*d_x-2*h_r_fpt6*d_x*cos_tx_angle_fpt6);
-	  h_f=h_los-fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
+	  h_f=h_los-BurstVariables::fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
 	  
 	  while (h_f<h_x)
 	    {
 	      h_r_fpt6+=1;
 	      cos_tx_angle_fpt6=((h_r_fpt6*h_r_fpt6)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r_fpt6*d_tx);
 	      h_los=sqrt(h_r_fpt6*h_r_fpt6+d_x*d_x-2*h_r_fpt6*d_x*cos_tx_angle_fpt6);
-	      h_f=h_los-fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
+	      h_f=h_los-BurstVariables::fzone_clearance*sqrt(lambda*d_x*(d_tx-d_x)/d_tx);
 	    }
 	}
     }
@@ -7015,10 +7015,10 @@ Pt2PtReturn PathReportBURST(struct site source, struct site destination)
   azimuth=Azimuth(source,destination);
   angle1=ElevationAngle(source,destination);
 
-  angle2= ElevationAngleTwo(source,destination,earthradius);
+  angle2= ElevationAngleTwo(source,destination,BurstVariables::earthradius);
 
   
-  if (got_azimuth_pattern || got_elevation_pattern)
+  if (BurstVariables::got_azimuth_pattern || BurstVariables::got_elevation_pattern)
     {
       x=(int)rint(10.0*(10.0-angle2));
       
@@ -7037,7 +7037,7 @@ Pt2PtReturn PathReportBURST(struct site source, struct site destination)
 
   angle1=ElevationAngle(destination,source);
 
-  angle2=ElevationAngleTwo(destination,source,earthradius);
+  angle2=ElevationAngleTwo(destination,source,BurstVariables::earthradius);
 
 
   
@@ -7054,12 +7054,12 @@ Pt2PtReturn PathReportBURST(struct site source, struct site destination)
 	  dBm=10.0*(log10(eirp*1000.0));
 	}
       
-      ReadPath(source, destination);  /* source=TX, destination=RX */
+    ReadPath(source, destination);  /* source=TX, destination=RX */
       /* Copy elevations plus clutter along
 	 path into the elev[] array. */
       
       for (x=1; x<path.length-1; x++)
-	elev[x+2]=METERS_PER_FOOT*(path.elevation[x]==0.0?path.elevation[x]:(clutter+path.elevation[x]));
+	elev[x+2]=METERS_PER_FOOT*(path.elevation[x]==0.0?path.elevation[x]:(BurstVariables::clutter+path.elevation[x]));
       
       /* Copy ending points without clutter */
       
@@ -7085,7 +7085,7 @@ Pt2PtReturn PathReportBURST(struct site source, struct site destination)
 	  
 	  cos_xmtr_angle=((source_alt2)+(distance*distance)-(dest_alt2))/(2.0*source_alt*distance);
 
-	  if (got_elevation_pattern)
+	  if (BurstVariables::got_elevation_pattern)
 	    {
 	      /* If an antenna elevation pattern is available, the
 		 following code determines the elevation angle to
@@ -7130,7 +7130,7 @@ Pt2PtReturn PathReportBURST(struct site source, struct site destination)
 	  
 	  elev[1]=METERS_PER_MILE*(path.distance[y]-path.distance[y-1]);
 	  
-	  if (olditm == 1){
+	  if (BurstVariables::olditm == 1){
 	    
 	    point_to_point_ITM(elev,source.alt*METERS_PER_FOOT,
 			       destination.alt*METERS_PER_FOOT, LR.eps_dielect,
@@ -7215,7 +7215,7 @@ Pt2PtReturn PathReportBURST(struct site source, struct site destination)
 	}
       
       
-      if (olditm)
+      if (BurstVariables::olditm)
 	{
 	  
 	}
