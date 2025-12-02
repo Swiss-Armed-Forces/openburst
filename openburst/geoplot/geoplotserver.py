@@ -116,39 +116,38 @@ def get_rad_coverage_kml(
 
     # now get all the polygons in the contourf plot and make a kml file from them
     nofpolys = 0
-    for collection in contour.collections:
-        for path in collection.get_paths():
-            path.should_simplify = False
-            for polygon in path.to_polygons():
-                nofpolys = nofpolys + 1
-                # print polygon.__class__
-                polycolor = collection.get_facecolor().tolist()[0]
-                mytuple = basefunctions.totuple(polygon)
-                if nofpolys == 1:
-                    pol = kml.newpolygon(name=polyname)
-                else:
-                    pol = kml.newpolygon(name="")
-                # set the boundaries of the polygon
-                pol.outerboundaryis = mytuple
+    for path in contour.get_paths():
+        path.should_simplify = False
+        for polygon in path.to_polygons():
+            nofpolys = nofpolys + 1
+            # print polygon.__class__
+            polycolor = path.get_facecolor().tolist()[0]
+            mytuple = basefunctions.totuple(polygon)
+            if nofpolys == 1:
+                pol = kml.newpolygon(name=polyname)
+            else:
+                pol = kml.newpolygon(name="")
+            # set the boundaries of the polygon
+            pol.outerboundaryis = mytuple
 
-                # set color of polygon border lines
-                # print("polycolor = ", polycolor)
-                pol.style.linestyle.color = simplekml.Color.rgb(
-                    int(polycolor[0] * 255.0),
-                    int(polycolor[1] * 255.0),
-                    int(polycolor[2] * 255.0),
-                    255,
-                )
-                pol.style.linestyle.width = 1
-                pol.style.polystyle.fill = 1
-                pol.style.polystyle.outline = 1
-                # fill polygon with transparent color (color same as the line color)
-                pol.style.polystyle.color = simplekml.Color.rgb(
-                    int(polycolor[0] * 255.0),
-                    int(polycolor[1] * 255.0),
-                    int(polycolor[2] * 255.0),
-                    255,
-                )  # r,g,b,transparency
+            # set color of polygon border lines
+            # print("polycolor = ", polycolor)
+            pol.style.linestyle.color = simplekml.Color.rgb(
+                int(polycolor[0] * 255.0),
+                int(polycolor[1] * 255.0),
+                int(polycolor[2] * 255.0),
+                255,
+            )
+            pol.style.linestyle.width = 1
+            pol.style.polystyle.fill = 1
+            pol.style.polystyle.outline = 1
+            # fill polygon with transparent color (color same as the line color)
+            pol.style.polystyle.color = simplekml.Color.rgb(
+                int(polycolor[0] * 255.0),
+                int(polycolor[1] * 255.0),
+                int(polycolor[2] * 255.0),
+                255,
+            )  # r,g,b,transparency
 
     snd_msg = json.dumps(kml.kml())
     nbr_args = 1
@@ -207,28 +206,27 @@ def get_rad_coverage_kml_below_rad(Z_list, queue, rad_id, flight_height, rcs,  r
 
     # now get all the polygons in the contourf plot and make a kml file from them
     nofpolys = 0
-    for collection in contour.collections:
-        for path in collection.get_paths():
-            path.should_simplify = False
-            for polygon in path.to_polygons(): 
-                nofpolys = nofpolys + 1
-                #print polygon.__class__
-                polycolor = collection.get_facecolor().tolist()[0]
-                mytuple = basefunctions.totuple(polygon)
-                if (nofpolys == 1):                
-                    pol = kml.newpolygon(name=polyname)
-                else:
-                    pol = kml.newpolygon(name="")
-                # set the boundaries of the polygon
-                pol.outerboundaryis = mytuple
-                                
-                # set color of polygon border lines
-                pol.style.linestyle.color = simplekml.Color.rgb(int(polycolor[0]*255.0), int(polycolor[1]*255.0), int(polycolor[2]*255.0), 255)
-                pol.style.linestyle.width = 1
-                pol.style.polystyle.fill = 1
-                pol.style.polystyle.outline = 1
-                # fill polygon with transparent color (color same as the line color)
-                pol.style.polystyle.color = simplekml.Color.rgb(int(polycolor[0]*255.0), int(polycolor[1]*255.0), int(polycolor[2]*255.0), 255) #r,g,b,transparency
+    for path in contour.get_paths():
+        path.should_simplify = False
+        for polygon in path.to_polygons(): 
+            nofpolys = nofpolys + 1
+            #print polygon.__class__
+            polycolor = path.get_facecolor().tolist()[0]
+            mytuple = basefunctions.totuple(polygon)
+            if (nofpolys == 1):                
+                pol = kml.newpolygon(name=polyname)
+            else:
+                pol = kml.newpolygon(name="")
+            # set the boundaries of the polygon
+            pol.outerboundaryis = mytuple
+                            
+            # set color of polygon border lines
+            pol.style.linestyle.color = simplekml.Color.rgb(int(polycolor[0]*255.0), int(polycolor[1]*255.0), int(polycolor[2]*255.0), 255)
+            pol.style.linestyle.width = 1
+            pol.style.polystyle.fill = 1
+            pol.style.polystyle.outline = 1
+            # fill polygon with transparent color (color same as the line color)
+            pol.style.polystyle.color = simplekml.Color.rgb(int(polycolor[0]*255.0), int(polycolor[1]*255.0), int(polycolor[2]*255.0), 255) #r,g,b,transparency
            
 
     kml.save(file_name)
@@ -322,37 +320,35 @@ def get_kml_object_simple(gridparams, Z, flight_height):
     kml_name = "PCL@" + "masl:" + str(flight_height)
     # now get all the polygons in the contourf plot and make a kml file from them
     nofpolys = 0
-    # TODO: QuadContourSet.collections property was deprecated in matplotlib v3.8.
-    for collection in contour.collections:
-        for path in collection.get_paths():
-            path.should_simplify = False
-            for polygon in path.to_polygons():
-                nofpolys = nofpolys + 1
-                # print polygon.__class__
-                polycolor = collection.get_facecolor().tolist()[0]
-                mytuple = basefunctions.totuple(polygon)
-                pol = kml.newpolygon(name=kml_name)
-                kml_name = ""
-                # set the boundaries of the polygon
-                pol.outerboundaryis = mytuple
+    for path in contour.get_paths():
+        path.should_simplify = False
+        for polygon in path.to_polygons():
+            nofpolys = nofpolys + 1
+            # print polygon.__class__
+            polycolor = contour.get_facecolor().tolist()[0]
+            mytuple = basefunctions.totuple(polygon)
+            pol = kml.newpolygon(name=kml_name)
+            kml_name = ""
+            # set the boundaries of the polygon
+            pol.outerboundaryis = mytuple
 
-                # set color of polygon border lines
-                pol.style.linestyle.color = simplekml.Color.rgb(
-                    int(polycolor[0] * 255.0),
-                    int(polycolor[1] * 255.0),
-                    int(polycolor[2] * 255.0),
-                    255,
-                )
-                pol.style.linestyle.width = 1
-                pol.style.polystyle.fill = 1
-                pol.style.polystyle.outline = 1
-                # fill polygon with transparent color (color same as the line color)
-                pol.style.polystyle.color = simplekml.Color.rgb(
-                    int(polycolor[0] * 255.0),
-                    int(polycolor[1] * 255.0),
-                    int(polycolor[2] * 255.0),
-                    255,
-                )  # r,g,b,transparency
+            # set color of polygon border lines
+            pol.style.linestyle.color = simplekml.Color.rgb(
+                int(polycolor[0] * 255.0),
+                int(polycolor[1] * 255.0),
+                int(polycolor[2] * 255.0),
+                255,
+            )
+            pol.style.linestyle.width = 1
+            pol.style.polystyle.fill = 1
+            pol.style.polystyle.outline = 1
+            # fill polygon with transparent color (color same as the line color)
+            pol.style.polystyle.color = simplekml.Color.rgb(
+                int(polycolor[0] * 255.0),
+                int(polycolor[1] * 255.0),
+                int(polycolor[2] * 255.0),
+                255,
+            )  # r,g,b,transparency
 
     kml.save("/tmp/simple_pr_contours.kml")
     return kml.kml()
