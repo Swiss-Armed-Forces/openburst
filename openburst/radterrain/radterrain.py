@@ -122,7 +122,7 @@ def get_radar_coverage_above_Sensor(
             ]
         )
 
-    nofprocs = int(mp.cpu_count() / 2)  # gets the number of cpus using multiprocessing
+    nofprocs = openburst_config.NUMBER_OF_PROCESSES  # gets the number of cpus using multiprocessing
     stop_at_first_los = 1  # set 1 for above radar coverage and 0 for below radar coverage
 
     max_north = geofunctions.burstvincentydistance(origin, max_distance, 0)
@@ -399,7 +399,7 @@ def get_radar_coverage_below_sensor(
     justlos = 1
     if radioprop_enabled == 1:
         justlos = 0
-    nofprocs = int(mp.cpu_count() / 2)  # gets the number of cpus using multiprocessing
+    nofprocs = openburst_config.NUMBER_OF_PROCESSES  # gets the number of cpus using multiprocessing
     stop_at_first_los = 0  # set 1 for above radar coverage and 0 for below radar coverage
 
     snd_msg = np.array(
@@ -618,7 +618,7 @@ def get_pet_coverage_for_quadrant(queue, radar_h, theta_res, dist_step, rad_id, 
     justlos = 1
     if (radioprop_enabled == 1):
         justlos = 0
-    nofprocs = int(mp.cpu_count() / 2)   # gets the number of cpus using multiprocessing
+    nofprocs = openburst_config.NUMBER_OF_PROCESSES   # gets the number of cpus using multiprocessing
     stopatfirstlos = 0  
 
 
@@ -806,7 +806,7 @@ def get_pcl_max_los_grid_splat(
     else:
         justlos = 0  # compute propagation losses
     asl = 1
-    nofprocs = 8  # number of processes for MPI (ideally equal to number of cores)
+    nofprocs = openburst_config.NUMBER_OF_PROCESSES  # number of processes for MPI (ideally equal to number of cores)
     
     # for computign propagation losses we assume a certain frequency per signal type
     if sig_type == "FM":

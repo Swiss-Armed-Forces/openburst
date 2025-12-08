@@ -30,6 +30,7 @@ services:
       BURST_DB_NAME: red3
       DEM_FILES_PATH: /SRTM
       KML_FILE_PATH: /KML_FILES/
+      NUMBER_OF_PROCESSES: 6
     volumes:
       - type: bind
         source: /home/user/Downloads/tmp
