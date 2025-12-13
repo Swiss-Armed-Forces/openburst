@@ -174,5 +174,6 @@ COPY ./LICENSE /openburst_full
 RUN python3 -m pip install --break-system-packages -e /openburst_full
 COPY ./entrypoint.sh /
 ENV PYTHONPATH="/openburst_full/openburst/radterrain/SPLAT_RADIOPROP:${PYTHONPATH}"
+ENV UTIL_SERVER_PORT="3875"
 
 ENTRYPOINT [ "/entrypoint.sh" ]

@@ -18,7 +18,7 @@ BURST_DB_SERVER_IP = os.environ.get("BURST_DB_SERVER_IP", "172.20.10.5")
 BURST_DB_SERVER_USERNAME = os.environ.get("BURST_DB_SERVER_USERNAME", "red3")
 BURST_DB_SERVER_PASSWORD = os.environ.get("BURST_DB_SERVER_PASSWORD", "red")
 
-NUMBER_OF_PROCESSES = os.environ.get("NUMBER_OF_PROCESSES", "6")
+NUMBER_OF_PROCESSES = int(os.environ.get("NUMBER_OF_PROCESSES", "6"))
 
 ########################################################################################
 ### ---- following constants are automatically set and shall no be configured by user
@@ -41,6 +41,7 @@ REBOUND_SERVER_PORT = os.environ.get("REBOUND_SERVER_PORT", "7112")  # a server 
 PCL_SERVER_PORT = os.environ.get("PCL_SERVER_PORT", "7999")  # pcl computations
 REPLAY_SERVER_PORT = os.environ.get("REPLAY_SERVER_PORT", "9945")  # replay computations
 RADIOPROP_SERVER_PORT = os.environ.get("RADIOPROP_SERVER_PORT", "9980")  # radio propagation
+UTIL_SERVER_PORT = int(os.environ.get("UTIL_SERVER_PORT", "3875")) # utility functions
 
 
 server_fields = (

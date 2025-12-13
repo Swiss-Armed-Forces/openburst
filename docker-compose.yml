@@ -95,6 +95,12 @@ services:
     entrypoint: ["python3", "/openburst_full/openburst/replay/replayServer.py"]
     ports:
       - "9945:9945"
+  
+  openburst_util:
+    <<: *common-config
+    entrypoint: ["python3", "/openburst_full/openburst/util/util_server.py"]
+    ports:
+      - "3875:3875"
 
   pgadmin:
     image: dpage/pgadmin4
