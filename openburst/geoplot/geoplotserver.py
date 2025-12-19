@@ -155,7 +155,7 @@ def get_rad_coverage_kml(
     args = [snd_msg]
     response = requestwrapper.RequestWrapper(request_type + "_response", nbr_args, args)
     response_json = json.dumps(response.__dict__)
-    logger("GEO").info(
+    logger.info(
         "sending kml with request_type: %s", response.request_type
     )
     queue.put(response_json)
