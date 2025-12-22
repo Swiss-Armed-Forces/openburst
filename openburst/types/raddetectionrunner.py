@@ -9,6 +9,7 @@ from openburst.functions import geofunctions
 from openburst.functions import basefunctions
 from openburst.functions import radfunctions
 from openburst.types import dbpersistentaccess
+from openburst.types.splatmanager import SharedSPLAT
 
 
 class RADRunnerClass(mp.Process):
@@ -219,15 +220,11 @@ class RADRunnerClass(mp.Process):
                     _terrain_height,
                     _recording_time,
                 ] = basefunctions.get_target_attributes(curr_target)
-                curr_dist_km = geofunctions.get_2d_distance_between_locs_heights(
-                    rad_lat, rad_lon, rad_height_masl, lat, lon, targ_height
-                )
-                if (
-                    curr_dist_km > max_det_range_km
-                ):  # do not further consider targets too far away
-                    continue
-
-                pd = radfunctions.get_rad_pd(
+                pd = rad_pd_doppler_filtered(
+                    # Radar parameters.
+                    rad_lat,
+                    rad_lon,
+                    rad_height_masl,
                     rad_power,
                     rad_antenna_diam,
                     rad_freq,
@@ -235,40 +232,18 @@ class RADRunnerClass(mp.Process):
                     rad_cpi_pulses,
                     rad_bandwidth,
                     rad_pfa,
-                    rcs,
-                    curr_dist_km,
-                    max_det_range_km,
-                    rad_lat,
-                    rad_lon,
-                    rad_height_masl,
-                    lat,
-                    lon,
-                    targ_height,
-                    splat_obj,
-                )
-
-                doppler_shift = geofunctions.monostatic_doppler(
-                    rad_freq,
-                    rad_lat,
-                    rad_lon,
-                    rad_height_masl,
+                    # Target parameters.
                     lat,
                     lon,
                     targ_height,
                     vx,
                     vy,
                     vz,
+                    rcs,
+                    max_det_range_km,
+                    splat_obj,
                 )
-                doppler_ok = True
-                if doppler_shift is None:
-                    doppler_ok = False
-                else:
-                    if (
-                        math.fabs(doppler_shift) < 5.0
-                    ):  # dopp shift threshold set arbitrarily to 5Hz (theoretically the integration time of each RAD has to be considered)
-                        doppler_ok = False
-
-                if (doppler_ok) and (pd > 0.0):
+                if pd > 0:
                     now = basefunctions.get_time()
                     # curr_det should contain: targ_id, sensor_id, team, pd, plot, track, det_time, lat, lon, height, vx, vy, vz, cpx, cpy, cpz, cvx, cvy, cvz, recording_time
                     curr_det = (
@@ -310,3 +285,90 @@ class RADRunnerClass(mp.Process):
                 len(all_dets_list),
             )
             self.dbaccess.write_rad_dets(tuple(all_dets_list))
+
+
+def rad_pd_doppler_filtered(
+    # Radar parameters.
+    rad_lat: float,
+    rad_lon: float,
+    rad_height_masl: float,
+    rad_power: float,
+    rad_antenna_diam: float,
+    rad_freq: float,
+    rad_pulse_width: float,
+    rad_cpi_pulses: float,
+    rad_bandwidth: float,
+    rad_pfa: float,
+    # Target parameters.
+    lat: float,
+    lon: float,
+    targ_height: float,
+    vx: float,
+    vy: float,
+    vz: float,
+    rcs: float,
+    max_det_range_km: float,
+    splat_obj: SharedSPLAT,
+    # dopp shift threshold set arbitrarily to 5Hz
+    # (theoretically the integration time of each RAD has to be considered)
+    doppler_shift_threshold: float = 5.0,
+) -> float:
+    """
+    Calculate probability that the radar detects the target.
+
+    Only targets with Doppler shift above the Doppler shift threshold have
+    a probability of detection greater than zero.
+
+    Returns
+    -------
+    pd: float
+        probability of detection (in [0, 1])
+    """
+    print("rad_pd_doppler_filtered()")
+    logging.getLogger("DEM").warning("rad_pd_doppler_filtered()")
+
+    curr_dist_km = geofunctions.get_2d_distance_between_locs_heights(
+        rad_lat, rad_lon, rad_height_masl, lat, lon, targ_height
+    )
+    if curr_dist_km > max_det_range_km:
+        # do not further consider targets too far away
+        return False
+
+    pd = radfunctions.get_rad_pd(
+        rad_power,
+        rad_antenna_diam,
+        rad_freq,
+        rad_pulse_width,
+        rad_cpi_pulses,
+        rad_bandwidth,
+        rad_pfa,
+        rcs,
+        curr_dist_km,
+        max_det_range_km,
+        rad_lat,
+        rad_lon,
+        rad_height_masl,
+        lat,
+        lon,
+        targ_height,
+        splat_obj,
+    )
+
+    doppler_shift = geofunctions.monostatic_doppler(
+        rad_freq,
+        rad_lat,
+        rad_lon,
+        rad_height_masl,
+        lat,
+        lon,
+        targ_height,
+        vx,
+        vy,
+        vz,
+    )
+    doppler_ok = doppler_shift is not None and math.fabs(doppler_shift) >= doppler_shift_threshold
+
+    if not doppler_ok:
+        pd = 0.0
+
+    return pd
