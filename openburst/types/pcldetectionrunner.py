@@ -231,6 +231,9 @@ class PCLRunnerClass(mp.Process):
         tgt_lat = np.array([[tgt.lat]])
         tgt_height = np.array([[tgt.height]])
 
+        tgt_rx_loss = 0
+        tgt_tx_loss = 0
+
         if radioprop_enabled == 1:
             just_los = 0
 
