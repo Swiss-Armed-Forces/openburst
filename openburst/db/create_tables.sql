@@ -191,6 +191,7 @@ ALTER TABLE blue_live.pcl_tx
 
 CREATE TABLE blue_live.pcl_detection
 (
+  id BIGINT GENERATED ALWAYS AS IDENTITY,
   rx_id integer NOT NULL,
   tx_id integer NOT NULL,
   pcl_rx_name character varying(50) NOT NULL,
@@ -212,7 +213,7 @@ CREATE TABLE blue_live.pcl_detection
   target_time double precision,
   std_dev_bist_range double precision, 
   std_dev_bist_vel double precision,
-  CONSTRAINT pcl_detection_pkey PRIMARY KEY (pcl_rx_name, pcl_tx_callsign, targ_id)
+  CONSTRAINT pcl_detection_pkey PRIMARY KEY (id)
 );
 ALTER TABLE blue_live.pcl_detection
   OWNER TO CURRENT_USER;

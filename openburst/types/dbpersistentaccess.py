@@ -393,15 +393,12 @@ class DbConnector():
             )
             try:
                 cur.execute(
-                    b"INSERT INTO blue_live.pcl_detection VALUES "
+                    b"INSERT INTO blue_live.pcl_detection "
+                    b"(rx_id, tx_id, pcl_rx_name, pcl_tx_callsign, targ_id, det_time, range, doppler, "
+                    b"tgt_lat, tgt_lon, tgt_height, recording_time, vx, vy, vz, velocity, bistatic_velocity, "
+                    b"snr, target_time, std_dev_bist_range, std_dev_bist_vel) "
+                    b"VALUES "
                     + args_str
-                    + b" ON CONFLICT (pcl_rx_name, pcl_tx_callsign,targ_id) "
-                    b"DO UPDATE SET "
-                    b"(rx_id, tx_id, pcl_rx_name, pcl_tx_callsign,targ_id, det_time, range, doppler, "
-                    b"tgt_lat, tgt_lon, tgt_height, recording_time, vx, vy, vz, velocity, bistatic_velocity, snr, target_time, std_dev_bist_range, std_dev_bist_vel) = "
-                    b"(EXCLUDED.rx_id, EXCLUDED.tx_id, EXCLUDED.pcl_rx_name, EXCLUDED.pcl_tx_callsign, EXCLUDED.targ_id, "
-                    b"EXCLUDED.det_time, EXCLUDED.range, EXCLUDED.doppler, EXCLUDED.tgt_lat, "
-                    b"EXCLUDED.tgt_lon, EXCLUDED.tgt_height, EXCLUDED.recording_time, EXCLUDED.vx, EXCLUDED.vy, EXCLUDED.vz, EXCLUDED.velocity, EXCLUDED.bistatic_velocity, EXCLUDED.snr, EXCLUDED.target_time, EXCLUDED.std_dev_bist_range, EXCLUDED.std_dev_bist_vel)"
                 )
             except psycopg2.Error as e:
                 self.logger.error(e)
