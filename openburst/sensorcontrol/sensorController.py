@@ -248,7 +248,7 @@ class SensorControllerSocketHandler(tornado.websocket.WebSocketHandler):
         self.manager = None  # StateManager()
         self.pcl_splat_manager = None
 
-        self.use_prop = 1  # this should always be one, beacuse we want to consider splat and prop losses always
+        self.use_prop = 0  # this should always be one, beacuse we want to consider splat and prop losses always
 
         # for postgresaccess
         self.dbaccess = dbpersistentaccess.DbConnector(logging.getLogger("SENSOR_CONTROL"), "SENSOR_CONTROL")
