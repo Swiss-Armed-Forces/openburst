@@ -31,6 +31,7 @@ services:
       DEM_FILES_PATH: /SRTM
       KML_FILE_PATH: /KML_FILES/
       NUMBER_OF_PROCESSES: 6
+      PCL_PLOT_LIFETIME: 86400 # 1 day [s]
     volumes:
       - type: bind
         source: /home/user/Downloads/tmp
@@ -41,6 +42,9 @@ services:
       - type: bind
         source: /home/user/Downloads/openburst_tmp
         target: /tmp
+      - type: bind
+        source: ./openburst/replay/DATA
+        target: /openburst_full/openburst/replay/DATA
       # - type: bind
       #   source: /home/user/Downloads/openburst_splat_workdir
       #   target: /openburst_full/openburst/radterrain/SPLAT_RADIOPROP
@@ -104,6 +108,8 @@ services:
 
   pgadmin:
     image: docker.io/dpage/pgadmin4
+    volumes:
+    - pgadmin_data:/var/lib/pgadmin
     environment:
       - PGADMIN_DEFAULT_EMAIL=user@domain.com
       - PGADMIN_DEFAULT_PASSWORD=SuperSecret
@@ -111,6 +117,9 @@ services:
       - "8080:80"
     networks:
       - internal
+
+volumes:
+  pgadmin_data:
 
 networks:
   internal:
