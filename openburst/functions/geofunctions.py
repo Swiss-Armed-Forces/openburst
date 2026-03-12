@@ -306,17 +306,11 @@ def monostatic_doppler(
     g = np.array([gx, gy, gz])  # [m]
     tgt_v = np.array([tgt_vx, tgt_vy, tgt_vz])  # [m/s]
 
-    # project tgt_v on g
-    proj_tgt_v = basefunctions.project_vector_u_on_v(tgt_v, g)
-
-    # calculate aspect angle
-    asp_angle = basefunctions.calc_angle_from_vecs(g, tgt_v)
-
     # get wavelength from freq where freq is given in GHz
     wv = sc.c / (freq * 1000000000)  # [m]
 
     # now compute Doppler shift
-    dopp_shift = 2.0 * np.linalg.norm(proj_tgt_v) * math.cos(asp_angle) / wv
+    dopp_shift = 2.0 * np.dot(tgt_v, g) / (np.linalg.norm(g) * wv)
     return dopp_shift
 
 
