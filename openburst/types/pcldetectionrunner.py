@@ -227,9 +227,9 @@ class PCLRunnerClass(mp.Process):
         t_max = pclconstants.MAX_COHERENT_INTEGRATION_TIME_FM  # maximum coherent integration time in [s], e.g. 0.5
         delay_thresh = 1  # [micro secs]
         static_rcs = 0.0 
-        tgt_lon = np.array([[tgt.lon]])
-        tgt_lat = np.array([[tgt.lat]])
-        tgt_height = np.array([[tgt.height]])
+        tgt_lon = float(tgt.lon)
+        tgt_lat = float(tgt.lat)
+        tgt_height = float(tgt.height)
 
         if radioprop_enabled == 1:
             just_los = 0
