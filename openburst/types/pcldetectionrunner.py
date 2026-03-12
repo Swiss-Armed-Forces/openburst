@@ -184,7 +184,7 @@ class PCLRunnerClass(mp.Process):
         ##################################################################
         ### setting just_los to 0 will invoke the usage of propagation loss computation in SPLAT
         ### setting just_los to 1 makes the SPLAT computation easier, ie without propagation losses
-        just_los = 0
+        just_los = 1
 
         ###############check targets height and leave if it is zero ####################
         if tgt.height <= 0:
@@ -230,6 +230,9 @@ class PCLRunnerClass(mp.Process):
         tgt_lon = float(tgt.lon)
         tgt_lat = float(tgt.lat)
         tgt_height = float(tgt.height)
+
+        tgt_rx_loss = 0
+        tgt_tx_loss = 0
 
         if radioprop_enabled == 1:
             just_los = 0
