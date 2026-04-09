@@ -25,8 +25,8 @@ class GridParameters:
         self.lat_stop = lat_stop  # from top right corner point        # 47.52
         self.lon_start = lon_start  # from bottom left corner point      # 8.3
         self.lon_stop = lon_stop  # from top right corner point        # 9
-        self.res_x = (lon_stop - lon_start) / amt_pts_x  # res_x              # meter
-        self.res_y = (lat_stop - lat_start) / amt_pts_y  # res_y              # meter
+        self.res_x = res_x  # meter
+        self.res_y = res_y  # meter
         self.res_z = res_z  # tag 0 or put very high value if you don't wan to distinguish between height levels
         self.min_x = lon_start
         self.max_x = lon_stop
