@@ -37,6 +37,32 @@ test_array = []
 ref_array = []
 
 
+
+def get_most_recent_target_location(replay_input):
+    # used by replayServer to get the most recent target location from many
+
+    # recording_time[ms], id, lat, lon, alt, speed, heading, vx, vy, vz
+    # sort by time in case not sorted
+    sorted_replay_input = replay_input[np.argsort(replay_input[:,0])]
+    
+    # unique target IDs
+    target_ids = np.unique(sorted_replay_input[:,1])
+
+    # now traverse the sorted_replay_input from the end and get just the first occurence of each target_id
+    sorted_replay_input_ud = np.flipud(sorted_replay_input)
+    return_array = [] # np.empty([1,10])
+    for i in range(target_ids.shape[0]):
+        curr_id = target_ids[i]
+        for j in range(sorted_replay_input_ud.shape[0]):
+            if (sorted_replay_input_ud[j,1] == curr_id):
+                #return_array = np.vstack([return_array, sorted_replay_input_ud[j,:]])
+                return_array.append(sorted_replay_input_ud[j,:])
+                break
+
+
+    return np.array(return_array)
+    
+
 def write_target_db_update(
     dbaccess, data_d, data_type, tgt_rcs=1
 ):
@@ -253,12 +279,20 @@ def append_targets(curr_time, prev_time, array_nr, report_ID):
     if start_index==stop_index:
         data_block = np.array([data_array[ start_index, [9, 2, 3, 4, 7, 6, 5, 10, 11, 12]]]  )
     else:
+        #print("data_array.shape: ", data_array.shape)
         data_block = data_array[
             start_index:stop_index, [9, 2, 3, 4, 7, 6, 5, 10, 11, 12]
         ]  # recording_time[ms], id, lat, lon, alt, speed, heading, vx, vy, vz 
-    print("--------------data_block--------")
+    #print("--------------replay data_block--------")
+    #for d in data_block:
+    #    print("targ id: ", d[1], ", rec. time: ", d[0], ", lat: ", d[2], ", lon: ", d[3], ", alt: ", d[4])
+    
+    data_block = get_most_recent_target_location(data_block)
+
+    print("--------------replay data_block with only most recent target updates--------")
     for d in data_block:
-        print(d[1], d[0], d[2], d[3])
+        print("targ id: ", d[1], ", rec. time: ", d[0], ", lat: ", d[2], ", lon: ", d[3], ", alt: ", d[4])
+    
        
     if array_nr == 1:
         prog = round(float(stop_index) / float(data_array.shape[0]), 3)
