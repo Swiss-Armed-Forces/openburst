@@ -187,7 +187,7 @@ def get_time():
 
 def get_time_ms_after_midnight():
     """! get the current time in milliseconds since the UNIX epoch (January 1, 1970 00:00:00 UTC) see: https://currentmillis.com/"""
-    return (get_time % (24*3600*1000)) 
+    return (get_time() % (24*3600*1000)) 
 
 def get_target_attributes(target):
     """returns target attributes"""
