@@ -185,6 +185,10 @@ def get_time():
     """! get the current time in milliseconds since the UNIX epoch (January 1, 1970 00:00:00 UTC) see: https://currentmillis.com/"""
     return int(round(time.time() * 1000))
 
+def get_time_ms_after_midnight():
+    """! get the current time in milliseconds since the UNIX epoch (January 1, 1970 00:00:00 UTC) see: https://currentmillis.com/"""
+    return (get_time % (24*3600*1000)) 
+
 def get_target_attributes(target):
     """returns target attributes"""
     # id_nr |  team  | rcs | name | running | velocity | lat | lon | height | vx | vy | vz | corridor_breadth | noftargets |  typed  | threed_waypoints_id | status | maneuvring | classification | waypoints | waypoints_index | update_time | terrainHeight | recording_time
@@ -367,3 +371,5 @@ def send_pet_list(queue, i):
             sendlist.append(current_place)
     # now send sendlist
     queue.put(json.dumps(sendlist))
+
+
