@@ -10,7 +10,7 @@ SNR_THRESHOLD = 15.0  # [dB], SNR threshold for detection
 DOPPLER_THRESHOLD = 2.0  # [dB], for detection
 MIN_RCS_THRESHOLD = 150.0  # [m2], for detection
 
-SENSOR_UPDATE_TIME = 1 # [s], update rate for pcl detection
+SENSOR_UPDATE_TIME = 2 # [s], update rate for pcl detection
 
 # maximum coherent integration time in [s] (use appropriate values for different signals)
 MAX_COHERENT_INTEGRATION_TIME_FM = 0.5
@@ -24,3 +24,7 @@ _USE_CARTESIAN = True
 
 # detection error model parameters
 _ERROR_MODEL_ON = True
+
+# STD DEVIATION OF BISTATIC DETECTIONS FM
+STD_DEV_BIST_RANGE_FM =  350 # [m]
+STD_DEV_BIST_VEL_FM = 1.87 #[m/s]

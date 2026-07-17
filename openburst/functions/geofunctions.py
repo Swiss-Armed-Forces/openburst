@@ -16,6 +16,31 @@ from pyproj import Proj, transform # needed for transforming from Lat/Long to CH
 from openburst.functions import basefunctions
 from openburst.constants.pclconstants import _USE_CARTESIAN
 
+
+def find_two_orthogonal_vectors_3d(v):
+    """
+    returns two orthogonal vectors to a given vector v
+    """
+
+    # Normalize input vector
+    v = v / np.linalg.norm(v)
+    
+    # temporary vector find a non-parallel vector 
+    if (abs(v[0]) < 0.9) : 
+        tmp = np.array([1, 0, 0])
+    else:
+        tmp = np.array([0, 1, 0])
+    
+    # orthogonal vector one
+    orth1 = np.cross(v, tmp)
+    orth1 /= np.linalg.norm(orth1)
+    
+    # orthogonal vector two
+    orth2 = np.cross(v, orth1)
+    orth2 /= np.linalg.norm(orth2)
+    
+    return orth1, orth2
+
 def get_azimuth_between_locs(lat1, lon1, lat2, lon2):
 
     """

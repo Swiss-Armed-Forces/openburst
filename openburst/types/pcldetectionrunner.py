@@ -14,6 +14,7 @@ from openburst.types import dbpersistentaccess
 from openburst.pcl.minrcs import calculate_min_rcs_with_los, calculate_min_rcs_without_los_single_pos
 from openburst.functions import geofunctions
 from openburst.pcl.minrcs import interpolate_attenuation, setup_vertical_attenuation
+from openburst.functions import socketfunctions
 
 # ------------------------------ runs PCL Sensor detections in a single process for each PCL sensor
 class PCLRunnerClass(mp.Process):
@@ -33,6 +34,7 @@ class PCLRunnerClass(mp.Process):
         self.update_time = pclconstants.SENSOR_UPDATE_TIME  # 1Hz update rate for PCL
         self.team = team
         self.dbaccess = dbpersistentaccess.DbConnector(logging.getLogger(__name__), "PCL_DETECTION_RUNNER")
+        self.live_detection_stream_client = socketfunctions.get_client_socket()
 
     def run(self):
 
@@ -438,4 +440,7 @@ class PCLRunnerClass(mp.Process):
                 str(sigma_v) 
             )
             writelist.append(currstr)
+            #PLOT timestamp[ms_after_afternight],bistatic_range[m](with substracted baseline),bistatic_velocity[m/s]
+            live_stream_str = "PLOT " + str(tgt.recording_time/1000.0) + "," + str(rx.rx_id) + "/" + str(tx.tx_id) + "," + str(bistatic_range_km*1000.0) + "," + str(bistatic_velocity) + "," + str(tgt.id_nr)
+            socketfunctions.send_client_data(self.live_detection_stream_client, live_stream_str) # send live detection data over socket
             self.dbaccess.write_pcl_dets(tuple(writelist))

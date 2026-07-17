@@ -26,7 +26,7 @@ from openburst.types import dbpersistentaccess
 from openburst.constants import openburst_config
 from openburst.types import replayrunner
 from openburst.constants import replayconstants
-
+from openburst.functions import socketfunctions
 
 if sys.version_info[0] >= 3:
     Unicode = str
@@ -64,7 +64,7 @@ def get_most_recent_target_location(replay_input):
     
 
 def write_target_db_update(
-    dbaccess, data_d, data_type, tgt_rcs=1
+    dbaccess, data_d, data_type, stream_client, tgt_rcs=1
 ):
 
     """
@@ -224,6 +224,14 @@ def write_target_db_update(
                 
 
             #print("ref_targ_list: ", ref_targ_list)
+
+    # stream all the ref targets
+    for targ in tuple(ref_targ_list):
+        tgt_message = "GT " + str(targ[0]) + "," + str(targ[6]) + "," + str(targ[7]) + "," + str(targ[8]) 
+        #print("targ: ", tgt_message)
+        socketfunctions.send_client_data(stream_client, tgt_message) 
+
+            
     #  and then write all the ref targets at once to the DB
     if len(ref_targ_list) > 0:
         dbaccess.write_targets(tuple(ref_targ_list))
@@ -289,9 +297,9 @@ def append_targets(curr_time, prev_time, array_nr, report_ID):
     
     data_block = get_most_recent_target_location(data_block)
 
-    print("--------------replay data_block with only most recent target updates--------")
-    for d in data_block:
-        print("targ id: ", d[1], ", rec. time: ", d[0], ", lat: ", d[2], ", lon: ", d[3], ", alt: ", d[4])
+    #print("--------------replay data_block with only most recent target updates--------")
+    #for d in data_block:
+    #    print("targ id: ", d[1], ", rec. time: ", d[0], ", lat: ", d[2], ", lon: ", d[3], ", alt: ", d[4])
     
        
     if array_nr == 1:
@@ -326,6 +334,9 @@ class ReplayRunnerClass(mp.Process):
         self.sampling_time = sampling_time
 
         self.dbaccess = dbpersistentaccess.DbConnector(logging.getLogger(__name__), "REPLAY")
+         
+        # for streaming ground truth
+        self.live_target_stream_client = socketfunctions.get_client_socket()
 
     def run(self):
         curr_time = (
@@ -390,8 +401,11 @@ class ReplayRunnerClass(mp.Process):
                 ind_data2[2],
             )
 
-            write_target_db_update(self.dbaccess, ind_data, 0, self.tgt_rcs)  # test
-            write_target_db_update(self.dbaccess, ind_data2, 1, self.tgt_rcs)  # ref
+
+            
+            write_target_db_update(self.dbaccess, ind_data, 0, self.live_target_stream_client, self.tgt_rcs, )  # test
+            write_target_db_update(self.dbaccess, ind_data2, 1, self.live_target_stream_client, self.tgt_rcs, )  # ref
+
 
             if ind_data2[2] > 0:  # if more than 0 replay targets in this time window
                 rtime = ind_data2[1][1]  # [ms after midnight]
@@ -503,6 +517,7 @@ class ReplayWebSocketHandler(tornado.websocket.WebSocketHandler):
         self.rc_notify = None
         self.npr_ref = None
         self.npr_test = None
+       
 
     def check_origin(self, origin):
         return True
