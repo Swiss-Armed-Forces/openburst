@@ -311,7 +311,7 @@ def monostatic_doppler(
 ):
     """computes Doppler shift in Hz from target motion as seen at ground stationary radar
     freq given in MHz, alts given in masl.
-    returns None if tgt V == 0. tgt_V is given as m/s along the lon/lat/z axis
+    returns None if tgt V == 0. tgt_V is given as m/s along the lat/lon/z (North/East/Up) axis
     see Class Target definition
     """
 
