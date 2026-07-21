@@ -752,53 +752,34 @@ def get_mainlobe_heading(horiz_diagr):
     # IMPORTANT THAT THE ATTEN_DIAGR_INTERP HAS LENGTH+1 to close the circle and to facilitate round operations
 
 
-def interpolate_attenuation(atten_diagr, new_interpol_angles):
+def interpolate_attenuation(atten_diagr, _):
     """ 
-    This function will interpolate the attenuation diagram by a set of new interpolation angles.
-    Computationally efficient as interpolation all the angles in advance is carried out, 
-    instead of interpolating for every target position.
-    
+    Prepares the attenuation diagram for interpolation by closing the circle.
+    Returns the closed diagram and the corresponding angles.
     """
-
     if isinstance(atten_diagr, (int, float)):  # length == 1
         atten_diagr_interp = np.asarray([atten_diagr])
-        angle_step = 1000
+        angles_clock = None
     elif isinstance(atten_diagr, str):
         atten_diagr_interp = np.asarray([0])
-        angle_step = 1000
-
+        angles_clock = None
     else:
-        angle_step = 2 * math.pi / new_interpol_angles.size
-
         angles_clock = np.linspace(0, 2 * math.pi, len(atten_diagr) + 1)
-        # in northing frame
-        atten_diagr = np.append(atten_diagr, atten_diagr[0])
-        # close the circle, such that interpolation for angle close to 2pi can be done
-
-        # This one interpolates the attenuation value respective of the wanted angle
-        atten_diagr_interp = np.interp(new_interpol_angles, angles_clock, atten_diagr)
-        atten_diagr_interp = np.append(atten_diagr_interp, atten_diagr[0])
-        # close the circle
-    return atten_diagr_interp, angle_step
+        atten_diagr_interp = np.append(atten_diagr, atten_diagr[0])
+    return atten_diagr_interp, angles_clock
 
 
 def find_attenuation_for_angle(
-    angle_bearing, atten_diagr_interp, angle_step, _
+    angle_bearing, atten_diagr_interp, angles_clock, _
 ):
     """
     Finds the attenuation of a Tx or a Rx represented by its attenuation diagram for a
-    specific angle. The angle_bearing is such that 0rad represents north whereas the first entry 
-    of the atten_diagr represents 0rad north, or pi/2.
-    - angle_bearing [rad]
-    - if interpol_atten==1, will interpolate the attenuation matrix to the correct value
-    
-    todo: interpol_atten_in_advance ignored
+    specific angle using linear interpolation.
     """
+    if angles_clock is None or (isinstance(angles_clock, int) and angles_clock == 1000):
+        return atten_diagr_interp[0]
 
-    atten_db_out = atten_diagr_interp[int(round(angle_bearing / angle_step))]
-
-    # Alternative:
-    # [~,tmp_ind] = min(abs(angles_clock-angle_north_fr));
-    # atten_dB_out = atten_diagr(tmp_ind);
+    angle_bearing = angle_bearing % (2 * math.pi)
+    atten_db_out = np.interp(angle_bearing, angles_clock, atten_diagr_interp)
 
     return atten_db_out
