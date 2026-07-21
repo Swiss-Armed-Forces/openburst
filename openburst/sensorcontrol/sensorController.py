@@ -213,7 +213,7 @@ def insert_air_target_tracks(request_received):
                 all_tgts_np_arr = np.vstack([all_tgts_np_arr, tgt_np_arr])
             
     # sort array by ms_after_midnight
-    # DateTimeIndex, millisecs, converted_integer_id, lat, lon, heading[0 = north..180 = south..360 = north], speed[km / h], altitude[m], track_quality, milli_secs_after_midnight, tgt_vx [vel m/s on lon axis], tgt_vy [vel m/s on lat axis], tgt_vz [vel m/s on z axis]
+    # DateTimeIndex, millisecs, converted_integer_id, lat, lon, heading[0 = north..180 = south..360 = north], speed[km / h], altitude[m], track_quality, milli_secs_after_midnight, tgt_vx [vel m/s on lat axis (North)], tgt_vy [vel m/s on lon axis (East)], tgt_vz [vel m/s on z axis (Up)]
     all_tgts_np_arr = all_tgts_np_arr[all_tgts_np_arr[:,9].argsort()] # sort with time milli_secs_after_midnight
     
 
