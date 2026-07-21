@@ -356,7 +356,7 @@ def calculate_min_rcs_los_single_pos(
     theta_t_bearing = geofunctions.get_azimuth_between_locs(Tx.lat, Tx.lon, tgt_y, tgt_x)
     theta_t_vert = geofunctions.get_elev_angle(tgt_z, Tx.masl + Tx.ahmagl, r_t)
 
-    if r_r + r_t < dist_delay_limit:  # checks if delay threshold is valid
+    if (r_r + r_t < dist_delay_limit) or (tgt_z < los_height_rx) or (tgt_z < los_height_tx):
         rcs = -1
         snr = -1
     else:
