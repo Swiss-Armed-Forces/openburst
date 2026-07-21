@@ -91,7 +91,9 @@ def get_elev_angle(tgt_z, antenna_z, dist_tgt_antenna):
     """
 
     try:
-        elev_angle = math.asin((tgt_z - antenna_z) / dist_tgt_antenna)
+        r_e = (4.0 / 3.0) * 6371000.0  # Effective earth radius in meters
+        h_corr = (dist_tgt_antenna ** 2) / (2.0 * r_e)  # Earth curvature drop
+        elev_angle = math.asin((tgt_z - h_corr - antenna_z) / dist_tgt_antenna)
         return elev_angle
     except ValueError as e:
         print("functions.py get_elev_angle Exception: ", e)
