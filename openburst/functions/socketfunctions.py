@@ -77,6 +77,17 @@ def send_client_data(client_socket, message):
     sends message through the client
     """
     client_socket.sendto(message.encode("utf-8"), (openburst_config.LIVE_PCL_DETECTION_SERVER_IP, openburst_config.LIVE_PCL_DETECTION_SERVER_PORT))
-            
+
+
+def send_reset_client_data(client_socket, message):
+    """
+    sends reset message to the cartesian tracker
+    """
+    client_socket.sendto(message.encode("utf-8"), (openburst_config.LIVE_PCL_BISTATIC_TRACK_SERVER_IP, openburst_config.LIVE_PCL_BISTATIC_TRACK_SERVER_PORT))
+          
+
+def send_client_bistatic_track_data(client_socket, message):
+    client_socket.sendto(message.encode("utf-8"), (openburst_config.LIVE_PCL_BISTATIC_TRACK_SERVER_IP, openburst_config.LIVE_PCL_BISTATIC_TRACK_SERVER_PORT))
+     
 
 ###############################################

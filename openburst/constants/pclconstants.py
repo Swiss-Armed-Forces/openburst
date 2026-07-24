@@ -23,8 +23,21 @@ _USE_CARTESIAN = True
 
 
 # detection error model parameters
-_ERROR_MODEL_ON = True
+ERROR_MODEL_ON = True
+
+# detection noise model
+NOISE_MODEL_ON = True
+NOISE_RATE = 0.000001 
+
 
 # STD DEVIATION OF BISTATIC DETECTIONS FM
 STD_DEV_BIST_RANGE_FM =  350 # [m]
 STD_DEV_BIST_VEL_FM = 1.87 #[m/s]
+
+PCL_MAX_RANGE_M = 80000 # MAX bistatic Range in meters
+PCL_MAX_V = 200 # MAX bistatic V in [m/s]
+RANGE_BIN_SIZE = 100
+V_BIN_SIZE = 2
+
+PCL_FRAME_MAX_AGE = 0.1 # [s], maximum age of the PCL range_doppler frame
+PCL_SEND_BIST_TRACK_INTERVAL = 1.0 # [s], send the bistatic track with this interval
